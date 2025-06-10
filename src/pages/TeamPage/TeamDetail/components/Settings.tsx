@@ -11,6 +11,7 @@ import {
     LoadingOutlined,
     PlusOutlined,
     LogoutOutlined,
+    CameraOutlined,
 } from '@ant-design/icons';
 import type { UploadProps } from 'antd';
 import { useMessage } from '@/hooks/useMessage';
@@ -144,8 +145,21 @@ const Settings = ({ teamId }: SettingsProps) => {
                 avatar: avatarFile || null,
             };
 
-            const res = await updateTeam(Number(teamId), payload);
-            setTeamData(res.data);
+            await updateTeam(Number(teamId), payload);
+            
+            // Fetch lại dữ liệu team để đảm bảo có thông tin mới nhất
+            const updatedTeamData = await getTeamById(teamId);
+            setTeamData(updatedTeamData);
+            
+            // Cập nhật form với dữ liệu mới
+            form.setFieldsValue({
+                name: updatedTeamData.name,
+                description: updatedTeamData.description,
+            });
+            
+            // Cập nhật avatar URL
+            setAvatarUrl(updatedTeamData.avatar_url || '');
+            
             setAvatarFile(null);
             message.success({
                 key: loadingKey,
@@ -227,6 +241,18 @@ const Settings = ({ teamId }: SettingsProps) => {
         setDeleteModalOpen(false);
     };
 
+    const handleCancelEdit = () => {
+        setIsEditing(false);
+        setAvatarFile(null);
+        // Reset form về giá trị ban đầu
+        form.setFieldsValue({
+            name: teamData?.name,
+            description: teamData?.description,
+        });
+        // Reset avatar URL về giá trị ban đầu
+        setAvatarUrl(teamData?.avatar_url || '');
+    };
+
     if (fetchingTeam) {
         return (
             <div className="flex justify-center items-center h-screen">
@@ -244,31 +270,77 @@ const Settings = ({ teamId }: SettingsProps) => {
     }
 
     return (
-        <div className="container  py-8">
+        <div className="container py-8">
+            <style>{`
+                .avatar-uploader .ant-upload {
+                    width: 192px !important;
+                    height: 192px !important;
+                }
+                .avatar-uploader .ant-upload-select {
+                    width: 192px !important;
+                    height: 192px !important;
+                    border-radius: 50% !important;
+                    position: relative;
+                    overflow: hidden;
+                }
+                .avatar-uploader .ant-upload-select:hover .avatar-overlay {
+                    opacity: 1;
+                }
+                .avatar-overlay {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background-color: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    opacity: 0;
+                    transition: opacity 0.3s ease;
+                    border-radius: 50%;
+                    z-index: 1;
+                }
+                .avatar-overlay .anticon {
+                    color: white;
+                    font-size: 24px;
+                }
+            `}</style>
             {contextHolder}
             <Card title="Thông tin cơ bản" className="shadow-lg rounded-lg mb-6">
                 <Row gutter={[24, 24]} align="top">
-                    <Col xs={24} md={8} className="flex justify-center md:justify-start">
+                    <Col xs={24} md={8} className="flex justify-center items-center">
                         <div className="relative w-48 h-48 mb-4">
                             {isEditing && !isJoinedTeam ? (
                                 <Upload
                                     name="avatar"
                                     listType="picture-circle"
-                                    className="avatar-uploader"
+                                    className="avatar-uploader w-full h-full"
                                     showUploadList={false}
                                     customRequest={({ onSuccess }) => setTimeout(() => onSuccess?.('ok'), 0)}
                                     beforeUpload={beforeUpload}
                                     onChange={handleFileChange}
+                                    style={{
+                                        width: '100%',
+                                        height: '100%'
+                                    }}
                                 >
-                                    {avatarUrl ? (
-                                        <img
-                                            src={avatarUrl}
-                                            alt="Team Avatar"
-                                            className="w-full h-full rounded-full object-cover"
-                                        />
-                                    ) : (
-                                        uploadButton
-                                    )}
+                                    <div className="w-48 h-48 flex items-center justify-center relative">
+                                        {avatarUrl ? (
+                                            <>
+                                                <img
+                                                    src={avatarUrl}
+                                                    alt="Team Avatar"
+                                                    className="w-full h-full rounded-full object-cover"
+                                                />
+                                                <div className="avatar-overlay">
+                                                    <CameraOutlined />
+                                                </div>
+                                            </>
+                                        ) : (
+                                            uploadButton
+                                        )}
+                                    </div>
                                 </Upload>
                             ) : (
                                 <img
@@ -325,13 +397,7 @@ const Settings = ({ teamId }: SettingsProps) => {
                                         <Button type="primary" htmlType="submit" loading={loading}>
                                             Lưu thay đổi
                                         </Button>
-                                        <Button
-                                            onClick={() => {
-                                                setIsEditing(false);
-                                                setAvatarFile(null);
-                                                setAvatarUrl(teamData?.avatar_url || '');
-                                            }}
-                                        >
+                                        <Button onClick={handleCancelEdit}>
                                             Hủy
                                         </Button>
                                     </div>
