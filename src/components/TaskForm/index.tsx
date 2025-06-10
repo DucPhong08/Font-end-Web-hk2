@@ -18,6 +18,7 @@ interface TaskFormProps {
         status?: string;
         priority?: string;
         date?: [dayjs.Dayjs, dayjs.Dayjs];
+        assigned_user_id?: number | string | null;
     };
     taskId?: number | string;
     teamId?: string | null;

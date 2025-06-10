@@ -3,7 +3,14 @@ import { Button, Form, Input, Select, DatePicker, Tag, Space, Spin, message } fr
 import { EditOutlined, DeleteOutlined, SaveOutlined, CloseOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { TaskDetailsProps } from '../type';
-import { getPriorityColor, getPriorityText, getStatusColor, getStatusText } from '../../TaskTable/tableState';
+import {
+    getPriorityColor,
+    getPriorityText,
+    getStatusColor,
+    getStatusText,
+    getRoleColor,
+    getRoleText,
+} from '../../TaskTable/tableState';
 import getMembers from '@services/teamServices/teamMembers/getMembersTeam';
 import { TeamMemberInfo } from '@services/teamServices/teamMembers/getMembersTeam';
 
@@ -280,22 +287,11 @@ const TaskOverview: React.FC<TaskOverviewProps> = ({
                                         (option?.label as string).toLowerCase().includes(input.toLowerCase())
                                     }
                                     className="rounded-lg border-gray-300 hover:border-indigo-500 focus:border-indigo-500 shadow-sm transition-all duration-300"
-                                    popupClassName="rounded-lg shadow-lg"
-                                    optionLabelProp="label"
                                     aria-label="Người thực hiện"
                                 >
                                     {teamMembers.map((user) => (
-                                        <Select.Option
-                                            key={user.id}
-                                            value={user.id}
-                                            label={`${user.full_name} (${user.role})`}
-                                        >
-                                            <div className="flex items-center justify-between">
-                                                <span className="font-medium text-gray-800">{user.full_name}</span>
-                                                <Tag color="blue" className="ml-2 text-xs rounded-full shadow-sm">
-                                                    {user.role}
-                                                </Tag>
-                                            </div>
+                                        <Select.Option key={user.id} value={user.id}>
+                                            {`${user.full_name} (${getRoleText(user.role)})`}
                                         </Select.Option>
                                     ))}
                                 </Select>
@@ -305,8 +301,11 @@ const TaskOverview: React.FC<TaskOverviewProps> = ({
                                 {assignedUser ? (
                                     <>
                                         <span className="font-medium text-gray-800">{assignedUser.full_name}</span>
-                                        <Tag color="blue" className="ml-2 text-xs rounded-full shadow-sm">
-                                            {assignedUser.role}
+                                        <Tag
+                                            color={getRoleColor(assignedUser.role)}
+                                            className="ml-2 text-xs rounded-full shadow-sm"
+                                        >
+                                            {getRoleText(assignedUser.role)}
                                         </Tag>
                                     </>
                                 ) : (

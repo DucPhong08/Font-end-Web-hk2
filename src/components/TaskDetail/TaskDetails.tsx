@@ -10,7 +10,7 @@ import TaskOverview from './TabsTask/TaskOverview';
 import NotesAndAttachments from './TabsTask/NotesAndAttachments';
 import Comments from './TabsTask/Comments';
 import { useMessage } from '@/hooks/useMessage';
-
+import { updateAssignment } from '@services/teamServices';
 function TaskDetails({ task: initialTask, onEditTask, onDeleteTask, onReload, teamId }: TaskDetailsProps) {
     const [task, setTask] = useState<TaskPayload>(initialTask);
     const [notesAndAttachments, setNotesAndAttachments] = useState<TaskNotesAndAttachments[]>([]);
@@ -237,6 +237,7 @@ function TaskDetails({ task: initialTask, onEditTask, onDeleteTask, onReload, te
             priority: task.priority,
             start_time: dayjs(task.start_time),
             end_time: dayjs(task.end_time),
+            assigned_user_id: task.assigned_user_id,
         });
         setIsEditing(true);
     }, [form, task]);
@@ -249,21 +250,32 @@ function TaskDetails({ task: initialTask, onEditTask, onDeleteTask, onReload, te
     const handleSave = useCallback(async () => {
         try {
             const values = await form.validateFields();
+            console.log('Form Values:', values);
+
             const updatedTask = {
                 ...task,
                 ...values,
-                start_time: values.start_time.format('YYYY-MM-DD HH:mm:ss'),
-                end_time: values.end_time.format('YYYY-MM-DD HH:mm:ss'),
+                start_time: values.start_time ? values.start_time.format('YYYY-MM-DD HH:mm:ss') : task.start_time,
+                end_time: values.end_time ? values.end_time.format('YYYY-MM-DD HH:mm:ss') : task.end_time,
             };
+
+            if (values.assigned_user_id && values.assigned_user_id !== task.assigned_user_id) {
+                await updateAssignment({
+                    taskId: Number(task.id),
+                    userId: values.assigned_user_id,
+                });
+                updatedTask.assigned_user_id = values.assigned_user_id;
+            }
 
             setTask(updatedTask);
             setIsEditing(false);
 
             memoizedNotification.loading({ key: 'saveTask', content: 'Đang lưu thay đổi...' });
-            await onEditTask(updatedTask);
+            await onEditTask(updatedTask); // chỉ cần gọi 1 lần
             onReload?.();
             memoizedNotification.success({ key: 'saveTask', content: 'Lưu thay đổi thành công!' });
         } catch (error) {
+            console.error(error);
             memoizedNotification.error({ key: 'saveTask', content: 'Không thể lưu thay đổi' });
         }
     }, [form, task, onEditTask, onReload, memoizedNotification]);
