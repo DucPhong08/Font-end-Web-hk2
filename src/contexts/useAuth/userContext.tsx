@@ -6,6 +6,7 @@ import { logout as logoutApi } from '../../services/authServices';
 import { UserProfile } from '../../services/types/types';
 import { clearToken, getToken, saveToken } from '../../utils/auth/authUtils';
 import { useMessage } from '@/hooks/useMessage';
+import { API_BASE_URL, WS_URL } from '@/config/config';
 
 interface UserContextType {
     user: UserProfile | null;
@@ -26,9 +27,11 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
     useEffect(() => {
         if (token) {
-            const newSocket = io('http://localhost:5000', {
+            const newSocket = io(WS_URL, {
                 auth: { token },
-                reconnection: false,
+                reconnection: true,
+                reconnectionAttempts: 5,
+                reconnectionDelay: 1000,
             });
             setSocket(newSocket);
 
