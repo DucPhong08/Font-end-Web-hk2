@@ -153,8 +153,8 @@ const Statistics = () => {
                               (detail) => detail.new_users,
                           )
                         : [],
-                    borderColor: '#1890ff',
-                    backgroundColor: 'rgba(24, 144, 255, 0.1)',
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37, 99, 235, 0.2)',
                     tension: 0.4,
                     fill: true,
                 },
@@ -174,8 +174,9 @@ const Statistics = () => {
                               statistics.statistics.tasks.team.total.tasks,
                           ]
                         : [],
-                    backgroundColor: ['#1890ff', '#52c41a'],
-                    borderWidth: 1,
+                    backgroundColor: ['#2563eb', '#16a34a'],
+                    borderColor: ['#ffffff', '#ffffff'],
+                    borderWidth: 2,
                 },
             ],
         }),
@@ -197,8 +198,8 @@ const Statistics = () => {
                               (detail) => detail.completed,
                           )
                         : [],
-                    borderColor: '#52c41a',
-                    backgroundColor: 'rgba(82, 196, 26, 0.1)',
+                    borderColor: '#16a34a',
+                    backgroundColor: 'rgba(22, 163, 74, 0.2)',
                     tension: 0.4,
                     fill: true,
                 },
@@ -214,14 +215,21 @@ const Statistics = () => {
             plugins: {
                 legend: {
                     position: 'bottom' as const,
+                    labels: {
+                        font: { size: 12, family: 'Inter, sans-serif' },
+                        color: '#374151',
+                    },
                 },
                 tooltip: {
+                    backgroundColor: '#1f2937',
+                    titleFont: { size: 14, family: 'Inter, sans-serif' },
+                    bodyFont: { size: 12, family: 'Inter, sans-serif' },
                     callbacks: {
                         label: function (context: any) {
                             const label = context.label || '';
                             const value = context.raw || 0;
                             const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
-                            const percentage = Math.round((value / total) * 100);
+                            const percentage = total ? Math.round((value / total) * 100) : 0;
                             return `${label}: ${value} (${percentage}%)`;
                         },
                     },
@@ -235,10 +243,15 @@ const Statistics = () => {
         () => ({
             ...chartOptions,
             scales: {
+                x: {
+                    ticks: { color: '#374151', font: { size: 12, family: 'Inter, sans-serif' } },
+                },
                 y: {
                     beginAtZero: true,
                     ticks: {
                         stepSize: 1,
+                        color: '#374151',
+                        font: { size: 12, family: 'Inter, sans-serif' },
                     },
                 },
             },
@@ -252,16 +265,22 @@ const Statistics = () => {
                 title: 'Loại',
                 dataIndex: 'type',
                 key: 'type',
+                render: (text: string) => <span className="font-medium text-gray-700">{text}</span>,
+                width: '33%',
             },
             {
                 title: 'Tổng số',
                 dataIndex: 'total',
                 key: 'total',
+                render: (text: number) => <span className="text-gray-700">{text}</span>,
+                width: '33%',
             },
             {
                 title: 'Đã hoàn thành',
                 dataIndex: 'completed',
                 key: 'completed',
+                render: (text: string) => <span className="text-gray-700">{text}</span>,
+                width: '33%',
             },
         ],
         [],
@@ -272,95 +291,128 @@ const Statistics = () => {
     }, []);
 
     return (
-        <div className="p-6">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">Thống kê hệ thống</h1>
-                <Select
-                    value={period}
-                    onChange={handlePeriodChange}
-                    options={[
-                        { value: 'all', label: 'Tất cả' },
-                        { value: 'month', label: 'Tháng này' },
-                        { value: 'year', label: 'Năm nay' },
-                    ]}
-                    className="w-40"
-                />
-            </div>
+        <div className="p-4 sm:p-6 bg-gray-50 min-h-screen">
+            <Spin
+                spinning={loading}
+                tip="Đang tải dữ liệu..."
+                size="large"
+                className="flex justify-center items-center"
+            >
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                    <h1 className="text-xl sm:text-2xl font-semibold text-gray-800">Thống kê hệ thống</h1>
+                    <Select
+                        value={period}
+                        onChange={handlePeriodChange}
+                        className="w-full sm:w-40 rounded-md"
+                        options={[
+                            { value: 'all', label: 'Tất cả' },
+                            { value: 'month', label: 'Tháng này' },
+                            { value: 'year', label: 'Năm nay' },
+                        ]}
+                    />
+                </div>
 
-            <Spin spinning={loading} size="large">
                 <Row gutter={[16, 16]}>
                     <Col xs={24} sm={12} md={6}>
-                        <Card>
+                        <Card className="rounded-xl shadow-sm border border-gray-200 bg-white hover:shadow-md transition-shadow">
                             <Statistic
-                                title="Tổng người dùng"
+                                title={<span className="text-gray-600 font-medium">Tổng người dùng</span>}
                                 value={totalUsers}
-                                prefix={<UserOutlined />}
-                                valueStyle={{ color: '#1890ff' }}
+                                prefix={<UserOutlined className="text-blue-600" />}
+                                valueStyle={{ color: '#2563eb', fontSize: '24px', fontWeight: 500 }}
                             />
                         </Card>
                     </Col>
                     <Col xs={24} sm={12} md={6}>
-                        <Card>
+                        <Card className="rounded-xl shadow-sm border border-gray-200 bg-white hover:shadow-md transition-shadow">
                             <Statistic
-                                title="Tổng công việc"
+                                title={<span className="text-gray-600 font-medium">Tổng công việc</span>}
                                 value={totalTasks}
-                                prefix={<TagsOutlined />}
-                                valueStyle={{ color: '#52c41a' }}
+                                prefix={<TagsOutlined className="text-green-600" />}
+                                valueStyle={{ color: '#16a34a', fontSize: '24px', fontWeight: 500 }}
                             />
                         </Card>
                     </Col>
                     <Col xs={24} sm={12} md={6}>
-                        <Card>
+                        <Card className="rounded-xl shadow-sm border border-gray-200 bg-white hover:shadow-md transition-shadow">
                             <Statistic
-                                title="Công việc hoàn thành"
+                                title={<span className="text-gray-600 font-medium">Công việc hoàn thành</span>}
                                 value={totalCompleted}
-                                prefix={<CheckCircleOutlined />}
-                                valueStyle={{ color: '#722ed1' }}
+                                prefix={<CheckCircleOutlined className="text-purple-600" />}
+                                valueStyle={{ color: '#7c3aed', fontSize: '24px', fontWeight: 500 }}
                             />
                         </Card>
                     </Col>
                     <Col xs={24} sm={12} md={6}>
-                        <Card>
+                        <Card className="rounded-xl shadow-sm border border-gray-200 bg-white hover:shadow-md transition-shadow">
                             <Statistic
-                                title="Tỷ lệ hoàn thành"
+                                title={<span className="text-gray-600 font-medium">Tỷ lệ hoàn thành</span>}
                                 value={totalTasks ? Math.round((totalCompleted / totalTasks) * 100) : 0}
-                                prefix={<TeamOutlined />}
+                                prefix={<TeamOutlined className="text-orange-600" />}
                                 suffix="%"
-                                valueStyle={{ color: '#fa8c16' }}
+                                valueStyle={{ color: '#ea580c', fontSize: '24px', fontWeight: 500 }}
                             />
                         </Card>
                     </Col>
                 </Row>
 
-                <Row gutter={[16, 16]} className="mt-4">
+                <Row gutter={[16, 16]} className="mt-6">
                     <Col xs={24} md={12}>
-                        <Card title="Tăng trưởng người dùng theo tháng">
-                            <div style={{ height: 300, width: '100%' }}>
+                        <Card
+                            title={
+                                <span className="text-lg font-semibold text-gray-800">
+                                    Tăng trưởng người dùng theo tháng
+                                </span>
+                            }
+                            className="rounded-xl shadow-sm border border-gray-200 bg-white"
+                        >
+                            <div className="h-64 sm:h-80 w-full">
                                 <Line data={userRegistrationData} options={lineChartOptions} />
                             </div>
                         </Card>
                     </Col>
                     <Col xs={24} md={12}>
-                        <Card title="Công việc hoàn thành theo tháng">
-                            <div style={{ height: 300, width: '100%' }}>
+                        <Card
+                            title={
+                                <span className="text-lg font-semibold text-gray-800">
+                                    Công việc hoàn thành theo tháng
+                                </span>
+                            }
+                            className="rounded-xl shadow-sm border border-gray-200 bg-white"
+                        >
+                            <div className="h-64 sm:h-80 w-full">
                                 <Line data={completedTasksData} options={lineChartOptions} />
                             </div>
                         </Card>
                     </Col>
                 </Row>
 
-                <Row gutter={[16, 16]} className="mt-4">
+                <Row gutter={[16, 16]} className="mt-6">
                     <Col xs={24}>
-                        <Card title="Phân bố công việc">
-                            <div style={{ height: 300, width: '100%' }}>
+                        <Card
+                            title={<span className="text-lg font-semibold text-gray-800">Phân bố công việc</span>}
+                            className="rounded-xl shadow-sm border border-gray-200 bg-white"
+                        >
+                            <div className="h-64 sm:h-80 w-full max-w-md mx-auto">
                                 <Pie data={taskDistributionData} options={chartOptions} />
                             </div>
                         </Card>
                     </Col>
                 </Row>
 
-                <Card title="Chi tiết công việc" className="mt-4">
-                    <Table columns={taskTableColumns} dataSource={taskTableData} pagination={false} />
+                <Card
+                    title={<span className="text-lg font-semibold text-gray-800">Chi tiết công việc</span>}
+                    className="mt-6 rounded-xl shadow-sm border border-gray-200 bg-white"
+                >
+                    <div className="overflow-x-auto">
+                        <Table
+                            columns={taskTableColumns}
+                            dataSource={taskTableData}
+                            pagination={false}
+                            className="ant-table-custom"
+                            scroll={{ x: 'max-content' }}
+                        />
+                    </div>
                 </Card>
             </Spin>
         </div>

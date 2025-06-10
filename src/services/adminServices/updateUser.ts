@@ -1,7 +1,7 @@
 import apiRequest from '../common/apiRequest';
 
 export interface UpdateUserBody {
-    status?: 'active' | 'inactive';
+    status?: 'active' | 'banned';
     role?: 'admin' | 'member';
     full_name?: string;
     resetPassword?: boolean;

@@ -6,7 +6,7 @@ export interface UserProfile {
     id?: number;
     email?: string;
     role?: string;
-    status?: string;
+    status?: 'active' | 'locked' | 'banned';
     full_name?: string;
     phone_number?: string;
     avatar_url?: string;
@@ -289,7 +289,7 @@ export interface User {
     email: string;
     full_name: string;
     role?: 'admin' | 'member';
-    status?: 'active' | 'inactive';
+    status?: 'active' | 'locked' | 'banned';
     created_at: string;
     updated_at: string;
     gender: string;
@@ -319,7 +319,7 @@ export interface CreateUserParams {
     password: string;
     full_name: string;
     role: 'admin' | 'member';
-    status: 'active' | 'inactive';
+    status: 'active' | 'locked' | 'banned';
 }
 
 export interface CreateUserResponse {

@@ -85,25 +85,27 @@ const TeamCard = ({ id, name, avatar_url, creator_name, type, onEdit, onDelete, 
     return (
         <Card
             hoverable
-            className="w-full transition-all duration-300 hover:shadow-lg cursor-pointer"
+            className="w-full rounded-lg shadow-sm border border-gray-100 transition-all duration-300 hover:shadow-md cursor-pointer"
             onClick={handleCardClick}
         >
             <div className="flex items-start justify-between mb-4">
-                <div className="flex items-start space-x-4">
-                    <div className="w-14 h-14 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                <div className="flex items-start space-x-3">
+                    <div className="w-12 h-12 bg-blue-50 rounded-md flex items-center justify-center flex-shrink-0 overflow-hidden">
                         {avatar_url ? (
-                            <img src={avatar_url} alt={name} className="w-full h-full object-cover rounded-lg" />
+                            <img src={avatar_url} alt={name} className="w-full h-full object-cover" />
                         ) : (
-                            <FontAwesomeIcon icon={faUsers} className="text-blue-500 text-2xl" />
+                            <FontAwesomeIcon icon={faUsers} className="text-blue-500 text-xl" />
                         )}
                     </div>
                     <div className="flex-1 min-w-0">
-                        <Text className="font-semibold text-lg block truncate" title={name}>
+                        <Text className="font-semibold text-base block truncate" title={name}>
                             {name}
                         </Text>
-                        <div className="flex items-center mt-2 text-gray-500 text-sm">
-                            <FontAwesomeIcon icon={faUser} className="mr-1" />
-                            <Text>{creator_name}</Text>
+                        <div className="flex items-center mt-1 text-gray-500 text-sm">
+                            <FontAwesomeIcon icon={faUser} className="mr-1 text-xs" />
+                            <Text className="text-sm text-gray-600 truncate" title={creator_name}>
+                                {creator_name}
+                            </Text>
                         </div>
                     </div>
                 </div>
@@ -114,7 +116,10 @@ const TeamCard = ({ id, name, avatar_url, creator_name, type, onEdit, onDelete, 
                             <Button
                                 type="text"
                                 icon={
-                                    <FontAwesomeIcon icon={faEllipsisV} className="text-gray-400 hover:text-gray-600" />
+                                    <FontAwesomeIcon
+                                        icon={faEllipsisV}
+                                        className="text-gray-400 hover:text-gray-600 text-base"
+                                    />
                                 }
                                 className="hover:bg-gray-100 rounded-full"
                             />
@@ -123,30 +128,42 @@ const TeamCard = ({ id, name, avatar_url, creator_name, type, onEdit, onDelete, 
                 )}
             </div>
 
-            <div className="flex justify-around border-t border-gray-100 pt-4 mt-2">
+            <div className="flex justify-around border-t border-gray-100 pt-3 mt-2">
                 <Tooltip title="Tổng quan">
                     <div
                         onClick={(e) => handleActionClick(e, 'overview')}
-                        className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-2 rounded-lg hover:bg-blue-50 cursor-pointer"
+                        className="flex flex-col items-center text-gray-500 hover:text-blue-600 transition-colors duration-200 p-2 rounded-md hover:bg-blue-50 cursor-pointer group"
                     >
-                        <FontAwesomeIcon icon={faDashboard} className="text-xl" />
+                        <FontAwesomeIcon
+                            icon={faDashboard}
+                            className="text-lg group-hover:scale-110 transition-transform duration-200"
+                        />
+                        <span className="text-xs mt-1 group-hover:text-blue-600">Tổng quan</span>
                     </div>
                 </Tooltip>
                 <Tooltip title="Công việc">
                     <div
                         onClick={(e) => handleActionClick(e, 'tasks')}
-                        className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-2 rounded-lg hover:bg-blue-50 cursor-pointer"
+                        className="flex flex-col items-center text-gray-500 hover:text-blue-600 transition-colors duration-200 p-2 rounded-md hover:bg-blue-50 cursor-pointer group"
                     >
-                        <FontAwesomeIcon icon={faBriefcase} className="text-xl" />
+                        <FontAwesomeIcon
+                            icon={faBriefcase}
+                            className="text-lg group-hover:scale-110 transition-transform duration-200"
+                        />
+                        <span className="text-xs mt-1 group-hover:text-blue-600">Công việc</span>
                     </div>
                 </Tooltip>
                 {onEdit && (
                     <Tooltip title="Chỉnh sửa">
                         <div
                             onClick={(e) => handleActionClick(e, 'settings')}
-                            className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-2 rounded-lg hover:bg-blue-50 cursor-pointer"
+                            className="flex flex-col items-center text-gray-500 hover:text-blue-600 transition-colors duration-200 p-2 rounded-md hover:bg-blue-50 cursor-pointer group"
                         >
-                            <FontAwesomeIcon icon={faPencilAlt} className="text-xl" />
+                            <FontAwesomeIcon
+                                icon={faPencilAlt}
+                                className="text-lg group-hover:scale-110 transition-transform duration-200"
+                            />
+                            <span className="text-xs mt-1 group-hover:text-blue-600">Chỉnh sửa</span>
                         </div>
                     </Tooltip>
                 )}

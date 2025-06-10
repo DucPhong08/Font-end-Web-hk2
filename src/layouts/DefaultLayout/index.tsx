@@ -162,7 +162,7 @@ const DefaultLayout = ({ children }: DefaultLayoutProps) => {
                         user={user}
                     />
                     <Content
-                        className="relative p-6 overflow-y-auto bg-white"
+                        className="relative p-6 overflow-y-auto bg-slate-50"
                         style={{
                             flex: 1,
                             overflowX: 'hidden',
