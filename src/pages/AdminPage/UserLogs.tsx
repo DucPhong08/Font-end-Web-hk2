@@ -227,6 +227,7 @@ const UserLogs = () => {
                         className: 'py-4',
                     }}
                     onChange={(pagination) => fetchLogs(pagination.current, pagination.pageSize)}
+                    scroll={{ x: 'max-content' }}
                     className="ant-table-custom"
                 />
             </Card>

@@ -318,27 +318,27 @@ const TaskOverview: React.FC<TaskOverviewProps> = ({
                     </div>
                 )}
 
-            <div>
-                <label className="text-gray-700 font-semibold mb-2 block">Mô tả</label>
-                {isEditing ? (
-                    <Form.Item
-                        name="description"
-                        rules={[{ required: true, message: 'Vui lòng nhập mô tả!' }]}
-                        validateTrigger={['onBlur', 'onSubmit']}
-                    >
-                <ReactQuill
-                    theme="snow"
-                    className="bg-white rounded-lg border border-gray-300 hover:border-indigo-500 focus-within:border-indigo-500 transition-all duration-300"
-                    style={{ height: '200px', overflow: 'auto' }}
-                />
-                    </Form.Item>
-                ) : (
-                    <div
-                        className="text-gray-800 leading-relaxed"
-                        dangerouslySetInnerHTML={{ __html: task.description || '-' }}
-                    />
-                )}
-            </div>
+                <div>
+                    <label className="text-gray-700 font-semibold mb-2 block">Mô tả</label>
+                    {isEditing ? (
+                        <Form.Item
+                            name="description"
+                            rules={[{ required: true, message: 'Vui lòng nhập mô tả!' }]}
+                            validateTrigger={['onBlur', 'onSubmit']}
+                        >
+                            <ReactQuill
+                                theme="snow"
+                                className="bg-white rounded-lg border border-gray-300 hover:border-indigo-500 focus-within:border-indigo-500 transition-all duration-300"
+                                style={{ height: '200px', overflow: 'auto' }}
+                            />
+                        </Form.Item>
+                    ) : (
+                        <div
+                            className="text-gray-800 leading-relaxed"
+                            dangerouslySetInnerHTML={{ __html: task.description || '-' }}
+                        />
+                    )}
+                </div>
             </Form>
         </>
     );

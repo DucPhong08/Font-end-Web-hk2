@@ -483,10 +483,10 @@ a {
 }
 
 .ql-container {
-  height: 160px !important;
-  overflow-y: auto;
+    height: 160px !important;
+    overflow-y: auto;
 }
 .ql-toolbar {
-  background-color: #f3f4f6 !important; /* Tailwind: bg-gray-100 */
-  border-bottom: 1px solid #d1d5db;     /* Tailwind: border-gray-300 */
+    background-color: #f3f4f6 !important; /* Tailwind: bg-gray-100 */
+    border-bottom: 1px solid #d1d5db; /* Tailwind: border-gray-300 */
 }

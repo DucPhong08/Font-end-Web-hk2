@@ -250,10 +250,10 @@ const Members = ({ teamId, onMemberChange }: MembersProps) => {
                             }}
                         >
                             {record.role === ROLES.CREATOR
-                                ? 'Creator'
+                                ? 'Người tạo'
                                 : record.role === ROLES.ADMIN
-                                  ? 'Admin'
-                                  : 'Member'}
+                                  ? 'Quản trị viên'
+                                  : 'Thành viên'}
                         </span>
 
                         {canEdit && (
@@ -360,6 +360,7 @@ const Members = ({ teamId, onMemberChange }: MembersProps) => {
                 rowKey="id"
                 loading={loading}
                 pagination={false}
+                scroll={{ x: 'max-content' }}
                 className="bg-white rounded-lg shadow"
             />
 

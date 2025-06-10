@@ -184,7 +184,7 @@ function Header({ collapsed, onCollapse, user, logout, onSettingsClick }: Header
 
     const notificationContent = (
         <div className="w-[280px] sm:w-[320px] md:w-[360px] bg-white rounded-lg shadow-lg">
-            <div className="p-2.5 sm:p-3 border-b border-gray-100 flex justify-between items-center bg-white">
+            <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-white">
                 <div>
                     <Text strong className="text-gray-800 text-sm sm:text-base">
                         Thông báo
@@ -194,7 +194,7 @@ function Header({ collapsed, onCollapse, user, logout, onSettingsClick }: Header
                 <Button
                     type="link"
                     onClick={() => navigate('/reminder')}
-                    className="text-blue-600 hover:text-blue-700 text-xs sm:text-sm"
+                    className="text-blue-600 hover:text-blue-700 text-xs sm:text-sm "
                 >
                     Xem tất cả
                 </Button>
@@ -210,22 +210,22 @@ function Header({ collapsed, onCollapse, user, logout, onSettingsClick }: Header
                         renderItem={(reminder) => (
                             <List.Item
                                 key={reminder.id}
-                                className="px-2 sm:px-3 py-2 sm:py-2.5 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition-colors duration-200"
+                                className=" hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition-colors duration-200"
                                 onClick={() => handleReminderClick(reminder)}
                             >
                                 <List.Item.Meta
-                                    className="ml-1 sm:ml-2"
+                                    className="ml-4"
                                     title={
                                         <div className="flex items-start">
-                                            <span className="text-gray-800 text-xs sm:text-sm">
-                                                {reminder.mes}
-                                                <div className="inline-flex items-center ml-1 space-x-1">
+                                            <span className="text-gray-800 text-xs md:text-sm ">
+                                                <b className="block break-words max-w-[42ch] mb-2">{reminder.mes}</b>
+                                                <div className="inline-flex items-center space-x-1">
                                                     {!reminder.is_read &&
                                                         reminder.start_time &&
                                                         isNewReminder(reminder.start_time) && (
                                                             <Tag
                                                                 color="blue"
-                                                                className="text-[8px] sm:text-[9px] px-1 py-0 leading-3"
+                                                                className="text-[8px] md:text-xs px-1 py-0 leading-3"
                                                             >
                                                                 Mới
                                                             </Tag>
@@ -233,7 +233,7 @@ function Header({ collapsed, onCollapse, user, logout, onSettingsClick }: Header
                                                     {reminder.type && (
                                                         <Tag
                                                             color={getTypeColor(reminder.type)}
-                                                            className="text-[10px] sm:text-[9px] leading-3 my-1"
+                                                            className="text-[8px] md:text-xs leading-3 my-1"
                                                         >
                                                             {reminder.type === 'task' ? 'Công việc' : 'Phân công'}
                                                         </Tag>

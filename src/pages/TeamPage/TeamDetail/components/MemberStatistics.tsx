@@ -3,15 +3,15 @@ import { Card, Row, Col, Statistic, Table, Spin, Tag, Progress } from 'antd';
 import { getMemberStatistics } from '@services/teamServices';
 import { useMessage } from '@hooks/useMessage';
 import { MemberStatistics as MemberStatisticsData } from '@services/types/types';
-import { 
-    UserOutlined, 
-    CheckCircleOutlined, 
-    ClockCircleOutlined, 
+import {
+    UserOutlined,
+    CheckCircleOutlined,
+    ClockCircleOutlined,
     FireOutlined,
     TrophyOutlined,
     CalendarOutlined,
     CommentOutlined,
-    FileTextOutlined
+    FileTextOutlined,
 } from '@ant-design/icons';
 
 const STATUS_MAP = {
@@ -44,22 +44,22 @@ interface MemberStatisticsProps {
     onClose?: () => void;
 }
 
-const StatisticCard = ({ 
-    title, 
-    value, 
-    suffix, 
-    icon, 
+const StatisticCard = ({
+    title,
+    value,
+    suffix,
+    icon,
     color = '#1890ff',
-    bgGradient 
-}: { 
-    title: string; 
-    value: number; 
-    suffix?: string; 
+    bgGradient,
+}: {
+    title: string;
+    value: number;
+    suffix?: string;
     icon?: React.ReactNode;
     color?: string;
     bgGradient?: string;
 }) => (
-    <Card 
+    <Card
         className="shadow-lg hover:shadow-xl transition-all duration-300 border-0 h-full"
         style={{
             background: bgGradient || `linear-gradient(135deg, ${color}15 0%, ${color}05 100%)`,
@@ -68,9 +68,9 @@ const StatisticCard = ({
         }}
         bodyStyle={{ height: '100%', display: 'flex', alignItems: 'center' }}
     >
-        <Statistic 
+        <Statistic
             title={<span className="text-gray-700 font-semibold">{title}</span>}
-            value={value} 
+            value={value}
             suffix={suffix}
             prefix={icon}
             valueStyle={{ color, fontWeight: 'bold', fontSize: '1.5rem' }}
@@ -78,18 +78,18 @@ const StatisticCard = ({
     </Card>
 );
 
-const PercentCard = ({ 
-    title, 
-    value, 
+const PercentCard = ({
+    title,
+    value,
     color = '#1890ff',
-    bgGradient 
-}: { 
-    title: string; 
+    bgGradient,
+}: {
+    title: string;
     value: number;
     color?: string;
     bgGradient?: string;
 }) => (
-    <Card 
+    <Card
         title={<span className="text-gray-800 font-bold">{title}</span>}
         className="shadow-lg hover:shadow-xl transition-all duration-300 border-0 h-full"
         style={{
@@ -100,15 +100,15 @@ const PercentCard = ({
         bodyStyle={{ height: 'calc(100% - 57px)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
     >
         <div className="space-y-2">
-            <Statistic 
-                value={value} 
-                precision={1} 
-                suffix="%" 
+            <Statistic
+                value={value}
+                precision={1}
+                suffix="%"
                 valueStyle={{ color, fontWeight: 'bold', fontSize: '1.8rem' }}
             />
-            <Progress 
-                percent={value} 
-                showInfo={false} 
+            <Progress
+                percent={value}
+                showInfo={false}
                 strokeColor={{
                     '0%': color,
                     '100%': `${color}80`,
@@ -119,18 +119,18 @@ const PercentCard = ({
     </Card>
 );
 
-const HourCard = ({ 
-    title, 
-    value, 
+const HourCard = ({
+    title,
+    value,
     color = '#1890ff',
-    bgGradient 
-}: { 
-    title: string; 
+    bgGradient,
+}: {
+    title: string;
     value: number;
     color?: string;
     bgGradient?: string;
 }) => (
-    <Card 
+    <Card
         title={<span className="text-gray-800 font-bold">{title}</span>}
         className="shadow-lg hover:shadow-xl transition-all duration-300 border-0 h-full"
         style={{
@@ -140,10 +140,10 @@ const HourCard = ({
         }}
         bodyStyle={{ height: 'calc(100% - 57px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
     >
-        <Statistic 
-            value={value} 
-            precision={1} 
-            suffix="giờ" 
+        <Statistic
+            value={value}
+            precision={1}
+            suffix="giờ"
             prefix={<ClockCircleOutlined />}
             valueStyle={{ color, fontWeight: 'bold', fontSize: '1.5rem' }}
         />
@@ -176,23 +176,18 @@ function MemberStatistics({ teamId, userId, onClose }: MemberStatisticsProps) {
 
     const columns = useMemo(
         () => [
-            { 
-                title: 'Tên công việc', 
-                dataIndex: 'title', 
+            {
+                title: 'Tên công việc',
+                dataIndex: 'title',
                 key: 'title',
-                render: (text: string) => (
-                    <span className="font-semibold text-gray-800">{text}</span>
-                )
+                render: (text: string) => <span className="font-semibold text-gray-800">{text}</span>,
             },
             {
                 title: 'Trạng thái',
                 dataIndex: 'status',
                 key: 'status',
                 render: (status: string) => (
-                    <Tag 
-                        color={STATUS_COLORS[status as keyof typeof STATUS_COLORS]} 
-                        className="font-medium"
-                    >
+                    <Tag color={STATUS_COLORS[status as keyof typeof STATUS_COLORS]} className="font-medium">
                         {STATUS_MAP[status as keyof typeof STATUS_MAP] || status}
                     </Tag>
                 ),
@@ -202,10 +197,7 @@ function MemberStatistics({ teamId, userId, onClose }: MemberStatisticsProps) {
                 dataIndex: 'priority',
                 key: 'priority',
                 render: (priority: string) => (
-                    <Tag 
-                        color={PRIORITY_COLORS[priority as keyof typeof PRIORITY_COLORS]}
-                        className="font-medium"
-                    >
+                    <Tag color={PRIORITY_COLORS[priority as keyof typeof PRIORITY_COLORS]} className="font-medium">
                         {PRIORITY_MAP[priority as keyof typeof PRIORITY_MAP] || priority}
                     </Tag>
                 ),
@@ -226,32 +218,30 @@ function MemberStatistics({ teamId, userId, onClose }: MemberStatisticsProps) {
                 dataIndex: 'days_remaining',
                 key: 'days_remaining',
                 render: (days: number) => (
-                    <Tag color={days <= 3 ? 'red' : days <= 7 ? 'orange' : 'green'}>
-                        {days} ngày
-                    </Tag>
+                    <Tag color={days <= 3 ? 'red' : days <= 7 ? 'orange' : 'green'}>{days} ngày</Tag>
                 ),
             },
-            { 
-                title: 'Bình luận', 
-                dataIndex: 'comment_count', 
+            {
+                title: 'Bình luận',
+                dataIndex: 'comment_count',
                 key: 'comment_count',
                 render: (count: number) => (
                     <span className="text-blue-600 font-medium">
                         <CommentOutlined className="mr-1" />
                         {count}
                     </span>
-                )
+                ),
             },
-            { 
-                title: 'Ghi chú', 
-                dataIndex: 'note_count', 
+            {
+                title: 'Ghi chú',
+                dataIndex: 'note_count',
                 key: 'note_count',
                 render: (count: number) => (
                     <span className="text-green-600 font-medium">
                         <FileTextOutlined className="mr-1" />
                         {count}
                     </span>
-                )
+                ),
             },
         ],
         [],
@@ -294,8 +284,8 @@ function MemberStatistics({ teamId, userId, onClose }: MemberStatisticsProps) {
             {/* Task Overview */}
             <Row gutter={[16, 16]}>
                 <Col xs={24} sm={12} md={12} lg={12} xl={6}>
-                    <StatisticCard 
-                        title="Tổng công việc đã tạo" 
+                    <StatisticCard
+                        title="Tổng công việc đã tạo"
                         value={task_statistics.total_created_tasks}
                         icon={<FireOutlined />}
                         color="#6366f1"
@@ -303,8 +293,8 @@ function MemberStatistics({ teamId, userId, onClose }: MemberStatisticsProps) {
                     />
                 </Col>
                 <Col xs={24} sm={12} md={12} lg={12} xl={6}>
-                    <StatisticCard 
-                        title="Công việc đã phân công" 
+                    <StatisticCard
+                        title="Công việc đã phân công"
                         value={task_statistics.assigned_tasks}
                         icon={<UserOutlined />}
                         color="#8b5cf6"
@@ -312,16 +302,16 @@ function MemberStatistics({ teamId, userId, onClose }: MemberStatisticsProps) {
                     />
                 </Col>
                 <Col xs={24} sm={12} md={12} lg={12} xl={6}>
-                    <PercentCard 
-                        title="Hoàn thành" 
+                    <PercentCard
+                        title="Hoàn thành"
                         value={parseFloat(task_statistics.completed_tasks) || 0}
                         color="#10b981"
                         bgGradient="linear-gradient(135deg, #10b98115 0%, #34d39905 100%)"
                     />
                 </Col>
                 <Col xs={24} sm={12} md={12} lg={12} xl={6}>
-                    <PercentCard 
-                        title="Đang thực hiện" 
+                    <PercentCard
+                        title="Đang thực hiện"
                         value={parseFloat(task_statistics.pending_tasks) || 0}
                         color="#f59e0b"
                         bgGradient="linear-gradient(135deg, #f59e0b15 0%, #fbbf2405 100%)"
@@ -332,8 +322,8 @@ function MemberStatistics({ teamId, userId, onClose }: MemberStatisticsProps) {
             {/* Performance Metrics */}
             <Row gutter={[16, 16]}>
                 <Col xs={24} sm={12} md={12} lg={12} xl={8}>
-                    <PercentCard 
-                        title="Tỷ lệ hoàn thành" 
+                    <PercentCard
+                        title="Tỷ lệ hoàn thành"
                         value={parseFloat(task_statistics.completion_rate) || 0}
                         color="#059669"
                         bgGradient="linear-gradient(135deg, #05966915 0%, #10b98105 100%)"
@@ -348,8 +338,8 @@ function MemberStatistics({ teamId, userId, onClose }: MemberStatisticsProps) {
                     />
                 </Col>
                 <Col xs={24} sm={24} md={24} lg={24} xl={8}>
-                    <StatisticCard 
-                        title="Điểm hoạt động" 
+                    <StatisticCard
+                        title="Điểm hoạt động"
                         value={parseFloat(task_statistics.activity_score)}
                         icon={<TrophyOutlined />}
                         color="#f59e0b"
@@ -359,7 +349,7 @@ function MemberStatistics({ teamId, userId, onClose }: MemberStatisticsProps) {
             </Row>
 
             {/* Active Tasks Table */}
-            <Card 
+            <Card
                 title={
                     <span className="text-xl font-bold text-gray-800">
                         <CheckCircleOutlined className="mr-2 text-blue-600" />
@@ -371,10 +361,10 @@ function MemberStatistics({ teamId, userId, onClose }: MemberStatisticsProps) {
                     background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
                 }}
             >
-                <Table 
-                    dataSource={active_tasks} 
-                    rowKey="id" 
-                    pagination={false} 
+                <Table
+                    dataSource={active_tasks}
+                    rowKey="id"
+                    pagination={false}
                     columns={columns}
                     className="shadow-sm"
                     rowClassName="hover:bg-blue-50 transition-colors duration-200"
@@ -383,7 +373,7 @@ function MemberStatistics({ teamId, userId, onClose }: MemberStatisticsProps) {
             </Card>
 
             {/* Time Performance */}
-            <Card 
+            <Card
                 title={
                     <span className="text-xl font-bold text-gray-800">
                         <ClockCircleOutlined className="mr-2 text-green-600" />
@@ -397,24 +387,24 @@ function MemberStatistics({ teamId, userId, onClose }: MemberStatisticsProps) {
             >
                 <Row gutter={[16, 16]}>
                     <Col xs={24} sm={12} md={12} lg={12} xl={8}>
-                        <HourCard 
-                            title="Thời gian trung bình" 
+                        <HourCard
+                            title="Thời gian trung bình"
                             value={performance_metrics.avg_completion_time}
                             color="#3b82f6"
                             bgGradient="linear-gradient(135deg, #3b82f615 0%, #60a5fa05 100%)"
                         />
                     </Col>
                     <Col xs={24} sm={12} md={12} lg={12} xl={8}>
-                        <HourCard 
-                            title="Nhanh nhất" 
+                        <HourCard
+                            title="Nhanh nhất"
                             value={performance_metrics.min_completion_time}
                             color="#10b981"
                             bgGradient="linear-gradient(135deg, #10b98115 0%, #34d39905 100%)"
                         />
                     </Col>
                     <Col xs={24} sm={24} md={24} lg={24} xl={8}>
-                        <HourCard 
-                            title="Lâu nhất" 
+                        <HourCard
+                            title="Lâu nhất"
                             value={performance_metrics.max_completion_time}
                             color="#f59e0b"
                             bgGradient="linear-gradient(135deg, #f59e0b15 0%, #fbbf2405 100%)"

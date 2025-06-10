@@ -238,6 +238,7 @@ const AdminLogs = () => {
                         tip: 'Đang tải dữ liệu...',
                     }}
                     onChange={handleTableChange}
+                    scroll={{ x: 'max-content' }}
                     className="ant-table-custom"
                 />
             </Card>
