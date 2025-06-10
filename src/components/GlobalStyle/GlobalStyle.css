@@ -149,18 +149,12 @@ a {
     text-decoration: none;
 }
 
-
-
-  
-  @media (max-width: 576px) {
+@media (max-width: 576px) {
     .ant-table-custom .ant-table-tbody > tr > td {
-      font-size: 12px;
-      padding: 6px 8px;
+        font-size: 12px;
+        padding: 6px 8px;
     }
-  }
-  
-  
-  
+}
 
 /* Common Hover Effects */
 .hover-effect {
