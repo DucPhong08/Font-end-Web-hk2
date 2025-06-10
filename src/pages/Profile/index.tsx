@@ -51,64 +51,63 @@ const ProfilePage = () => {
         }
     }, []);
 
-const handleProfileUpdate = useCallback(
-    async (values: Partial<UpdateUserProfile>) => {
-        if (!user?.id) {
-            message.error({ key: 'update-error', content: 'User not found' });
-            return;
-        }
-
-        const loadingKey = 'update-profile-loading';
-        setLoading(true);
-        message.loading({ key: loadingKey, content: 'Updating profile...' });
-
-        try {
-            const payload: Partial<UpdateUserProfile> = {
-                full_name: values.full_name?.trim(),
-                phone_number: values.phone_number?.trim(),
-                gender: values.gender,
-                address: values.address?.trim(),
-                bio: values.bio?.trim(),
-            };
-            if (values.date_of_birth) {
-                const date = values.date_of_birth as any;
-                payload.date_of_birth = date?.format?.('YYYY-MM-DD') || null;
-            }
-            payload.avatar = avatarFile instanceof File ? avatarFile : user.avatar_url;
-
-            const res = await updateMeProfile(payload);
-            if (!res) return;
-
-            const currentValues = form.getFieldsValue();
-
-            form.setFieldsValue({
-                full_name: res.full_name ?? currentValues.full_name,
-                email: res.email ?? currentValues.email,
-                phone_number: res.phone_number ?? currentValues.phone_number,
-                gender: res.gender ?? currentValues.gender,
-                address: res.address ?? currentValues.address,
-                bio: res.bio ?? currentValues.bio,
-                date_of_birth: res.date_of_birth ? dayjs(res.date_of_birth) : currentValues.date_of_birth,
-            });
-
-            if (res.avatar_url) {
-                setAvatarUrl(res.avatar_url);
-                setAvatarFile(null);
+    const handleProfileUpdate = useCallback(
+        async (values: Partial<UpdateUserProfile>) => {
+            if (!user?.id) {
+                message.error({ key: 'update-error', content: 'User not found' });
+                return;
             }
 
-            await fetchUserInfo(); 
+            const loadingKey = 'update-profile-loading';
+            setLoading(true);
+            message.loading({ key: loadingKey, content: 'Updating profile...' });
 
-            message.success({ key: loadingKey, content: 'Profile updated successfully!' });
-        } catch (error) {
-            console.error('Update error:', error);
-            message.error({ key: loadingKey, content: 'Failed to update profile' });
-        } finally {
-            setLoading(false);
-        }
-    },
-    [user, avatarFile, form, message, fetchUserInfo] 
-);
+            try {
+                const payload: Partial<UpdateUserProfile> = {
+                    full_name: values.full_name?.trim(),
+                    phone_number: values.phone_number?.trim(),
+                    gender: values.gender,
+                    address: values.address?.trim(),
+                    bio: values.bio?.trim(),
+                };
+                if (values.date_of_birth) {
+                    const date = values.date_of_birth as any;
+                    payload.date_of_birth = date?.format?.('YYYY-MM-DD') || null;
+                }
+                payload.avatar = avatarFile instanceof File ? avatarFile : user.avatar_url;
 
+                const res = await updateMeProfile(payload);
+                if (!res) return;
+
+                const currentValues = form.getFieldsValue();
+
+                form.setFieldsValue({
+                    full_name: res.full_name ?? currentValues.full_name,
+                    email: res.email ?? currentValues.email,
+                    phone_number: res.phone_number ?? currentValues.phone_number,
+                    gender: res.gender ?? currentValues.gender,
+                    address: res.address ?? currentValues.address,
+                    bio: res.bio ?? currentValues.bio,
+                    date_of_birth: res.date_of_birth ? dayjs(res.date_of_birth) : currentValues.date_of_birth,
+                });
+
+                if (res.avatar_url) {
+                    setAvatarUrl(res.avatar_url);
+                    setAvatarFile(null);
+                }
+
+                await fetchUserInfo();
+
+                message.success({ key: loadingKey, content: 'Profile updated successfully!' });
+            } catch (error) {
+                console.error('Update error:', error);
+                message.error({ key: loadingKey, content: 'Failed to update profile' });
+            } finally {
+                setLoading(false);
+            }
+        },
+        [user, avatarFile, form, message, fetchUserInfo],
+    );
 
     return (
         <div className="md:px-8">
@@ -116,24 +115,24 @@ const handleProfileUpdate = useCallback(
             <div className="mx-auto">
                 <Card className="shadow-xl border-separate bg-white">
                     <div className="text-center mb-8">
-                    <div className="relative w-32 h-32 mx-auto mb-4 group">
-                    <Avatar
-                        size={128}
-                        src={avatarUrl}
-                        icon={<UserOutlined />}
-                        className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
-                    />
-                    <Upload
-                        customRequest={({ onSuccess }) => setTimeout(() => onSuccess?.('ok'), 0)}
-                        onChange={handleFileChange}
-                        showUploadList={false}
-                        accept="image/*"
-                    >
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer">
-                        <CameraOutlined className="text-white text-2xl" />
+                        <div className="relative w-32 h-32 mx-auto mb-4 group">
+                            <Avatar
+                                size={128}
+                                src={avatarUrl}
+                                icon={<UserOutlined />}
+                                className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
+                            />
+                            <Upload
+                                customRequest={({ onSuccess }) => setTimeout(() => onSuccess?.('ok'), 0)}
+                                onChange={handleFileChange}
+                                showUploadList={false}
+                                accept="image/*"
+                            >
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer">
+                                    <CameraOutlined className="text-white text-2xl" />
+                                </div>
+                            </Upload>
                         </div>
-                    </Upload>
-                    </div>
 
                         <Title level={4} className="mt-3 text-gray-800 font-semibold">
                             {user?.full_name || 'No name provided'}

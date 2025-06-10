@@ -43,7 +43,6 @@ const Login = () => {
         }
     };
 
-
     return (
         <div className="w-full h-full flex items-center justify-center p-4 md:p-8">
             {contextHolder}

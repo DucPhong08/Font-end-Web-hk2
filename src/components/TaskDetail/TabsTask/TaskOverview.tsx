@@ -281,21 +281,11 @@ const TaskOverview: React.FC<TaskOverviewProps> = ({
                                     }
                                     className="rounded-lg border-gray-300 hover:border-indigo-500 focus:border-indigo-500 shadow-sm transition-all duration-300"
                                     popupClassName="rounded-lg shadow-lg"
-                                    optionLabelProp="label"
                                     aria-label="Người thực hiện"
                                 >
                                     {teamMembers.map((user) => (
-                                        <Select.Option
-                                            key={user.id}
-                                            value={user.id}
-                                            label={`${user.full_name} (${user.role})`}
-                                        >
-                                            <div className="flex items-center justify-between">
-                                                <span className="font-medium text-gray-800">{user.full_name}</span>
-                                                <Tag color="blue" className="ml-2 text-xs rounded-full shadow-sm">
-                                                    {user.role}
-                                                </Tag>
-                                            </div>
+                                        <Select.Option key={user.id} value={user.id}>
+                                        {`${user.full_name} (${user.role})`}
                                         </Select.Option>
                                     ))}
                                 </Select>

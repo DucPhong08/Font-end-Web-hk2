@@ -146,20 +146,20 @@ const Settings = ({ teamId }: SettingsProps) => {
             };
 
             await updateTeam(Number(teamId), payload);
-            
+
             // Fetch lại dữ liệu team để đảm bảo có thông tin mới nhất
             const updatedTeamData = await getTeamById(teamId);
             setTeamData(updatedTeamData);
-            
+
             // Cập nhật form với dữ liệu mới
             form.setFieldsValue({
                 name: updatedTeamData.name,
                 description: updatedTeamData.description,
             });
-            
+
             // Cập nhật avatar URL
             setAvatarUrl(updatedTeamData.avatar_url || '');
-            
+
             setAvatarFile(null);
             message.success({
                 key: loadingKey,
@@ -322,7 +322,7 @@ const Settings = ({ teamId }: SettingsProps) => {
                                     onChange={handleFileChange}
                                     style={{
                                         width: '100%',
-                                        height: '100%'
+                                        height: '100%',
                                     }}
                                 >
                                     <div className="w-48 h-48 flex items-center justify-center relative">
@@ -397,9 +397,7 @@ const Settings = ({ teamId }: SettingsProps) => {
                                         <Button type="primary" htmlType="submit" loading={loading}>
                                             Lưu thay đổi
                                         </Button>
-                                        <Button onClick={handleCancelEdit}>
-                                            Hủy
-                                        </Button>
+                                        <Button onClick={handleCancelEdit}>Hủy</Button>
                                     </div>
                                 </Form.Item>
                             </Form>

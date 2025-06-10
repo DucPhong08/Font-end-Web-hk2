@@ -37,7 +37,7 @@ async function apiRequest<T = any>(
             }
         }
 
-        const baseUrl = 'https://api-tm-7.onrender.com/api' || 'http://localhost:5000/api';
+        const baseUrl = 'https://web-hk2.onrender.com/api' || 'http://localhost:5000/api';
         const response = await fetch(`${baseUrl}${endpoint}`, options);
         const data = await response.json();
 
