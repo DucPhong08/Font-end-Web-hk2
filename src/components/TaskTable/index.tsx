@@ -467,7 +467,6 @@ const TaskTable = ({
         {
             title: 'Thao tác',
             key: 'action',
-            fixed: 'right',
             width: isMobile ? 80 : 130,
             align: 'center' as const,
             render: (_: any, record: TaskPayload) => (

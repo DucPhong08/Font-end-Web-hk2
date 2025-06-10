@@ -194,7 +194,6 @@ const CalendarComponent = ({ tasks, loading = false, onTaskCreated }: CalendarCo
                     onCancel={() => setIsModalOpen(false)}
                     footer={null}
                     title={selectedTask ? 'Chỉnh sửa công việc' : 'Thêm công việc mới'}
-                    style={{ maxWidth: 600 }}
                 >
                     <TaskForm
                         key={selectedTask?.id || 'new'}
