@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { getMeProfile } from '../../services/userServices';
 import loginApi from '../../services/authServices/login';
+import { logout as logoutApi } from '../../services/authServices';
 import { UserProfile } from '../../services/types/types';
 import { clearToken, getToken, saveToken } from '../../utils/auth/authUtils';
 import { useMessage } from '@/hooks/useMessage';
@@ -21,13 +22,19 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<UserProfile | null>(null);
     const { message } = useMessage();
 
-    const logout = useCallback(() => {
-        clearToken();
-        localStorage.removeItem('full_name');
-        localStorage.removeItem('role');
-        setToken(null);
-        setUser(null);
-        window.location.href = '/';
+    const logout = useCallback(async () => {
+        try {
+            await logoutApi();
+        } catch (error) {
+            console.error('Logout error:', error);
+        } finally {
+            clearToken();
+            localStorage.removeItem('full_name');
+            localStorage.removeItem('role');
+            setToken(null);
+            setUser(null);
+            window.location.href = '/';
+        }
     }, []);
 
     const handleSessionExpired = useCallback(() => {
@@ -99,7 +106,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
                 }
             },
             30 * 60 * 1000,
-        ); // Kiểm tra mỗi 30 phút
+        );
 
         return () => clearInterval(checkSessionInterval);
     }, [token, fetchUserInfo, handleSessionExpired]);

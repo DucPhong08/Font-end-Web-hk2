@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Space, Modal, Form, Input, Select, Popconfirm, Input as AntInput, Checkbox, Tag } from 'antd';
+import { Table, Button, Space, Modal, Form, Input, Select, Popconfirm, Input as AntInput, Tag, Switch } from 'antd';
 import { EditOutlined, DeleteOutlined, UserAddOutlined, SearchOutlined } from '@ant-design/icons';
 import { getUsersApi, createUserApi, updateUserApi, deleteUserApi } from '@/services/adminServices';
 import type { ColumnsType } from 'antd/es/table';
@@ -10,7 +10,7 @@ import { useMessage } from '@/hooks/useMessage';
 const { Search } = AntInput;
 
 type UserRole = 'admin' | 'member';
-type UserStatus = 'active' | 'inactive';
+type UserStatus = 'active' | 'banned';
 
 const UserManagement = () => {
     const { message, contextHolder } = useMessage();
@@ -19,7 +19,8 @@ const UserManagement = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [form] = Form.useForm();
     const [editingUser, setEditingUser] = useState<User | null>(null);
-    const [resetPassword, setResetPassword] = useState(false);
+    const [resetPasswordSwitch, setResetPasswordSwitch] = useState(false);
+    const [isBannedSwitch, setIsBannedSwitch] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [pagination, setPagination] = useState({
         current: 1,
@@ -34,6 +35,18 @@ const UserManagement = () => {
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    useEffect(() => {
+        if (editingUser) {
+            form.setFieldsValue(editingUser);
+            setResetPasswordSwitch(false);
+            setIsBannedSwitch(editingUser.status === 'banned');
+        } else {
+            form.resetFields();
+            setResetPasswordSwitch(false);
+            setIsBannedSwitch(false);
+        }
+    }, [editingUser, form]);
 
     const fetchUsers = async (page = 1, pageSize = 10, search = '') => {
         setLoading(true);
@@ -80,14 +93,15 @@ const UserManagement = () => {
             const updateData: UpdateUserBody = {
                 full_name: values.full_name,
                 role: values.role,
-                status: values.status,
-                ...(resetPassword && { resetPassword: true }),
+                status: isBannedSwitch ? 'banned' : 'active',
+                ...(resetPasswordSwitch && { resetPassword: true }),
             };
+
             await updateUserApi(editingUser.id.toString(), updateData);
             message.success({ key: 'update-user', content: 'Cập nhật người dùng thành công' });
             setModalVisible(false);
             form.resetFields();
-            setResetPassword(false);
+            setResetPasswordSwitch(false);
             fetchUsers(pagination.current, pagination.pageSize, searchText);
         } catch (error) {
             message.error({ key: 'update-user', content: 'Không thể cập nhật người dùng' });
@@ -125,6 +139,7 @@ const UserManagement = () => {
                 key: 'email',
                 sorter: (a, b) => a.email.localeCompare(b.email),
                 width: 200,
+                render: (text: string) => <span className="font-medium text-gray-700">{text}</span>,
             },
             {
                 title: 'Họ và tên',
@@ -132,14 +147,15 @@ const UserManagement = () => {
                 key: 'full_name',
                 sorter: (a, b) => (a.full_name || '').localeCompare(b.full_name || ''),
                 width: 200,
+                render: (text: string) => <span className="text-gray-700">{text}</span>,
             },
             {
                 title: 'Vai trò',
                 dataIndex: 'role',
                 key: 'role',
                 render: (role: UserRole) => (
-                    <Tag color={role === 'admin' ? 'blue' : 'magenta'}>
-                        {role === 'admin' ? 'Quản trị viên' : 'Người dùng'}
+                    <Tag className="font-medium" color={role === 'admin' ? 'blue' : 'purple'}>
+                        {role === 'admin' ? 'Quản trị viên' : 'Thành viên'}
                     </Tag>
                 ),
                 width: 130,
@@ -148,18 +164,40 @@ const UserManagement = () => {
                 title: 'Trạng thái',
                 dataIndex: 'status',
                 key: 'status',
-                render: (status: UserStatus) => (
-                    <Tag color={status === 'active' ? 'green' : 'volcano'}>
-                        {status === 'active' ? 'Hoạt động' : 'Ngưng hoạt động'}
-                    </Tag>
-                ),
+                render: (status: UserStatus) => {
+                    let color = 'default';
+                    let text = '';
+                    switch (status) {
+                        case 'active':
+                            color = 'green';
+                            text = 'Hoạt động';
+                            break;
+                        case 'banned':
+                            color = 'red';
+                            text = 'Bị cấm';
+                            break;
+                        default:
+                            color = 'default';
+                            text = 'Không hoạt động';
+                    }
+                    return (
+                        <Tag className="font-medium" color={color}>
+                            {text}
+                        </Tag>
+                    );
+                },
                 width: 130,
             },
             {
                 title: 'Ngày tạo',
                 dataIndex: 'created_at',
                 key: 'created_at',
-                render: (date: string) => new Date(date).toLocaleDateString(),
+                render: (date: string) =>
+                    new Date(date).toLocaleDateString('vi-VN', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                    }),
                 sorter: (a, b) => new Date(a.created_at || '').getTime() - new Date(b.created_at || '').getTime(),
                 width: 150,
             },
@@ -169,16 +207,17 @@ const UserManagement = () => {
                 fixed: 'right',
                 width: isMobile ? 80 : 130,
                 render: (_: any, record: User) => (
-                    <Space size="middle" style={{ minWidth: 120 }}>
+                    <Space size="small">
                         <Button
-                            type="primary"
+                            type="text"
                             icon={<EditOutlined />}
+                            className="text-blue-600 hover:text-blue-800"
                             onClick={() => {
                                 setEditingUser(record);
                                 setModalVisible(true);
-                                setResetPassword(false);
+                                setResetPasswordSwitch(false);
+                                setIsBannedSwitch(record.status === 'banned');
                             }}
-                            style={{ whiteSpace: 'nowrap' }}
                             size="small"
                         >
                             {!isMobile && 'Sửa'}
@@ -189,7 +228,12 @@ const UserManagement = () => {
                             okText="Có"
                             cancelText="Không"
                         >
-                            <Button danger icon={<DeleteOutlined />} size="small" />
+                            <Button
+                                type="text"
+                                icon={<DeleteOutlined />}
+                                className="text-red-600 hover:text-red-800"
+                                size="small"
+                            />
                         </Popconfirm>
                     </Space>
                 ),
@@ -198,17 +242,25 @@ const UserManagement = () => {
         [isMobile],
     );
 
+    const totalTableWidth = React.useMemo(() => {
+        const baseWidth = 200 + 200 + 130 + 130 + 150;
+        const actionColumnWidth = isMobile ? 80 : 130;
+        return baseWidth + actionColumnWidth;
+    }, [isMobile]);
+
     return (
-        <div className="p-6">
+        <div className="p-4 sm:p-6 bg-gray-50 min-h-screen">
             {contextHolder}
-            <div className="mb-4 flex justify-between items-center">
+            <div className="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                 <Button
                     type="primary"
                     icon={<UserAddOutlined />}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg"
                     onClick={() => {
                         setEditingUser(null);
                         setModalVisible(true);
-                        setResetPassword(false);
+                        setResetPasswordSwitch(false);
+                        setIsBannedSwitch(false);
                     }}
                 >
                     Thêm người dùng
@@ -218,106 +270,131 @@ const UserManagement = () => {
                     allowClear
                     enterButton={<SearchOutlined />}
                     onSearch={handleSearch}
-                    style={{ width: 300 }}
+                    className="w-full sm:w-80"
                 />
             </div>
 
-            <Table
-                columns={columns}
-                dataSource={users}
-                rowKey="id"
-                loading={loading}
-                pagination={{
-                    ...pagination,
-                    showSizeChanger: true,
-                    position: ['bottomCenter'],
-                }}
-                onChange={handleTableChange}
-                scroll={{ x: 900 }}
-            />
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <Table
+                    columns={columns}
+                    dataSource={users}
+                    rowKey="id"
+                    loading={{
+                        spinning: loading,
+                        tip: 'Đang tải dữ liệu...',
+                    }}
+                    pagination={{
+                        ...pagination,
+                        showSizeChanger: true,
+                        position: ['bottomCenter'],
+                        className: 'py-4',
+                    }}
+                    onChange={handleTableChange}
+                    scroll={{ x: totalTableWidth }}
+                    className="ant-table-custom"
+                />
+            </div>
 
             <Modal
-                title={editingUser ? 'Sửa người dùng' : 'Thêm người dùng mới'}
+                title={
+                    <span className="text-lg font-semibold text-gray-800">
+                        {editingUser ? 'Sửa người dùng' : 'Thêm người dùng mới'}
+                    </span>
+                }
                 open={modalVisible}
                 onCancel={() => {
                     setModalVisible(false);
                     form.resetFields();
-                    setResetPassword(false);
+                    setResetPasswordSwitch(false);
                 }}
                 footer={null}
+                className="rounded-lg"
+                width={isMobile ? '90%' : 520}
             >
                 <Form
                     form={form}
                     layout="vertical"
                     onFinish={editingUser ? handleUpdateUser : handleCreateUser}
                     initialValues={editingUser || {}}
+                    className="p-4"
                 >
                     <Form.Item
                         name="email"
-                        label="Email"
+                        label={<span className="font-medium text-gray-700">Email</span>}
                         rules={[
                             { required: true, message: 'Vui lòng nhập email' },
                             { type: 'email', message: 'Email không hợp lệ' },
                         ]}
                     >
-                        <Input disabled={!!editingUser} />
+                        <Input disabled={!!editingUser} className="rounded-md border-gray-300 focus:border-blue-500" />
                     </Form.Item>
 
                     <Form.Item
                         name="full_name"
-                        label="Họ và tên"
+                        label={<span className="font-medium text-gray-700">Họ và tên</span>}
                         rules={[{ required: true, message: 'Vui lòng nhập họ và tên' }]}
                     >
-                        <Input />
+                        <Input className="rounded-md border-gray-300 focus:border-blue-500" />
                     </Form.Item>
 
                     {!editingUser && (
                         <Form.Item
                             name="password"
-                            label="Mật khẩu"
+                            label={<span className="font-medium text-gray-700">Mật khẩu</span>}
                             rules={[
                                 { required: true, message: 'Vui lòng nhập mật khẩu' },
                                 { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự' },
                             ]}
                         >
-                            <Input.Password />
+                            <Input.Password className="rounded-md border-gray-300 focus:border-blue-500" />
                         </Form.Item>
                     )}
 
                     {editingUser && (
-                        <Form.Item>
-                            <Checkbox checked={resetPassword} onChange={(e) => setResetPassword(e.target.checked)}>
-                                Đặt lại mật khẩu
-                            </Checkbox>
+                        <Form.Item
+                            label={<span className="font-medium text-gray-700">Trạng thái</span>}
+                            valuePropName="checked"
+                        >
+                            <Switch
+                                checked={isBannedSwitch}
+                                onChange={setIsBannedSwitch}
+                                checkedChildren="Bị cấm"
+                                unCheckedChildren="Hoạt động"
+                                className="bg-gray-300"
+                            />
+                        </Form.Item>
+                    )}
+
+                    {editingUser && (
+                        <Form.Item
+                            label={<span className="font-medium text-gray-700">Đặt lại mật khẩu</span>}
+                            valuePropName="checked"
+                        >
+                            <Switch
+                                checked={resetPasswordSwitch}
+                                onChange={setResetPasswordSwitch}
+                                className="bg-gray-300"
+                            />
                         </Form.Item>
                     )}
 
                     <Form.Item
                         name="role"
-                        label="Vai trò"
+                        label={<span className="font-medium text-gray-700">Vai trò</span>}
                         rules={[{ required: true, message: 'Vui lòng chọn vai trò' }]}
                     >
-                        <Select>
+                        <Select className="rounded-md">
                             <Select.Option value="member">Thành viên</Select.Option>
                             <Select.Option value="admin">Quản trị viên</Select.Option>
                         </Select>
                     </Form.Item>
 
-                    {editingUser && (
-                        <Form.Item
-                            name="status"
-                            label="Trạng thái"
-                            rules={[{ required: true, message: 'Vui lòng chọn trạng thái' }]}
-                        >
-                            <Select>
-                                <Select.Option value="active">Hoạt động</Select.Option>
-                                <Select.Option value="inactive">Ngưng hoạt động</Select.Option>
-                            </Select>
-                        </Form.Item>
-                    )}
-
                     <Form.Item>
-                        <Button type="primary" htmlType="submit">
+                        <Button
+                            type="primary"
+                            htmlType="submit"
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg"
+                        >
                             {editingUser ? 'Cập nhật' : 'Thêm mới'}
                         </Button>
                     </Form.Item>
