@@ -579,6 +579,7 @@ const TaskTable = ({
                         pageSize: 10,
                         showSizeChanger: false,
                         className: 'px-6 py-4',
+                        position: ['bottomCenter'],
                     }}
                     className="custom-table"
                     rowClassName="hover:bg-gray-50 transition-colors duration-200"

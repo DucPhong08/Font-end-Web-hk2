@@ -271,7 +271,7 @@ function TaskDetails({ task: initialTask, onEditTask, onDeleteTask, onReload, te
             setIsEditing(false);
 
             memoizedNotification.loading({ key: 'saveTask', content: 'Đang lưu thay đổi...' });
-            await onEditTask(updatedTask); // chỉ cần gọi 1 lần
+            await onEditTask(updatedTask);
             onReload?.();
             memoizedNotification.success({ key: 'saveTask', content: 'Lưu thay đổi thành công!' });
         } catch (error) {

@@ -316,7 +316,6 @@ const TaskOverview: React.FC<TaskOverviewProps> = ({
                     </div>
                 )}
 
-                {/* Description */}
                 <div>
                     <label className="text-gray-700 font-semibold mb-2 block">Mô tả</label>
                     {isEditing ? (
