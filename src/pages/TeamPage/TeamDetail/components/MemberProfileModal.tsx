@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Modal, Avatar, Descriptions, Spin, Tag } from 'antd';
 import { UserProfile } from '@services/types/types';
 import type { TeamMemberInfo } from '@services/teamServices/teamMembers/getMembersTeam';
-import getProfileOtherUserByNameEmail from '@services/userServices/getProfileOtherUserByName&Email';
+import { viewProfileOtherUser } from '@services/userServices';
 import { useMessage } from '@hooks/useMessage';
 import { ROLES } from '@common/constant';
 
@@ -22,7 +22,7 @@ const MemberProfileModal: React.FC<MemberProfileModalProps> = ({ isOpen, onClose
             if (!member?.id) return;
             try {
                 setLoading(true);
-                const data = await getProfileOtherUserByNameEmail(member.id.toString());
+                const data = await viewProfileOtherUser(member.id.toString());
                 setProfile(data);
             } catch (error) {
                 message.error({

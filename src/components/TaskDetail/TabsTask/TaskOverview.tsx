@@ -13,6 +13,8 @@ import {
 } from '../../TaskTable/tableState';
 import getMembers from '@services/teamServices/teamMembers/getMembersTeam';
 import { TeamMemberInfo } from '@services/teamServices/teamMembers/getMembersTeam';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 const { TextArea } = Input;
 
@@ -316,24 +318,27 @@ const TaskOverview: React.FC<TaskOverviewProps> = ({
                     </div>
                 )}
 
-                <div>
-                    <label className="text-gray-700 font-semibold mb-2 block">Mô tả</label>
-                    {isEditing ? (
-                        <Form.Item
-                            name="description"
-                            rules={[{ required: true, message: 'Vui lòng nhập mô tả!' }]}
-                            validateTrigger={['onBlur', 'onSubmit']}
-                        >
-                            <Input.TextArea
-                                rows={4}
-                                className="rounded-lg border-gray-300 hover:border-indigo-500 focus:border-indigo-500 shadow-sm transition-all duration-300"
-                                aria-label="Mô tả công việc"
-                            />
-                        </Form.Item>
-                    ) : (
-                        <p className="text-gray-800 whitespace-pre-wrap leading-relaxed">{task.description || '-'}</p>
-                    )}
-                </div>
+            <div>
+                <label className="text-gray-700 font-semibold mb-2 block">Mô tả</label>
+                {isEditing ? (
+                    <Form.Item
+                        name="description"
+                        rules={[{ required: true, message: 'Vui lòng nhập mô tả!' }]}
+                        validateTrigger={['onBlur', 'onSubmit']}
+                    >
+                <ReactQuill
+                    theme="snow"
+                    className="bg-white rounded-lg border border-gray-300 hover:border-indigo-500 focus-within:border-indigo-500 transition-all duration-300"
+                    style={{ height: '200px', overflow: 'auto' }}
+                />
+                    </Form.Item>
+                ) : (
+                    <div
+                        className="text-gray-800 leading-relaxed"
+                        dangerouslySetInnerHTML={{ __html: task.description || '-' }}
+                    />
+                )}
+            </div>
             </Form>
         </>
     );
