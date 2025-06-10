@@ -15,5 +15,14 @@ module.exports = {
             '@assets': path.resolve(__dirname, 'src/assets'),
             '@': path.resolve(__dirname, 'src/'),
         },
+        configure: (webpackConfig) => {
+            webpackConfig.resolve.fallback = {
+                ...webpackConfig.resolve.fallback,
+                path: require.resolve('path-browserify'),
+                os: require.resolve('os-browserify/browser'),
+                fs: false,
+            };
+            return webpackConfig;
+        },
     },
 };

@@ -23,12 +23,11 @@ function App() {
 
             const isAdminRoute = route.path.startsWith('/admin');
             const isPublicRoute = route.path === '/';
-            const is404Route = route.path === '/404';
 
             const renderElement = () => {
                 if (!Page) return undefined;
 
-                if (isPublicRoute || is404Route) {
+                if (isPublicRoute) {
                     return (
                         <Layout>
                             <Page />

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { io, Socket } from 'socket.io-client';
 import { getMeProfile } from '../../services/userServices';
 import loginApi from '../../services/authServices/login';
 import { logout as logoutApi } from '../../services/authServices';
@@ -20,11 +21,45 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export const UserProvider = ({ children }: { children: ReactNode }) => {
     const [token, setToken] = useState<string | null>(getToken());
     const [user, setUser] = useState<UserProfile | null>(null);
+    const [socket, setSocket] = useState<Socket | null>(null);
     const { message } = useMessage();
+
+    useEffect(() => {
+        if (token) {
+            const newSocket = io('http://localhost:5000', {
+                auth: { token },
+                reconnection: false,
+            });
+            setSocket(newSocket);
+
+            newSocket.on('connect', () => {
+                console.log('Connected to Socket.IO');
+                newSocket.emit('authenticate', token);
+            });
+
+            newSocket.on('disconnect', () => {
+                console.log('Disconnected from Socket.IO');
+            });
+
+            newSocket.on('connect_error', (error) => {
+                console.error('Socket.IO connection error:', error);
+                handleSessionExpired();
+            });
+
+            return () => {
+                newSocket.disconnect();
+                setSocket(null);
+            };
+        }
+    }, [token]);
 
     const logout = useCallback(async () => {
         try {
             await logoutApi();
+            if (socket) {
+                socket.emit('logout');
+                socket.disconnect();
+            }
         } catch (error) {
             console.error('Logout error:', error);
         } finally {
@@ -33,14 +68,19 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
             localStorage.removeItem('role');
             setToken(null);
             setUser(null);
+            setSocket(null);
             window.location.href = '/';
         }
-    }, []);
+    }, [socket]);
 
     const handleSessionExpired = useCallback(() => {
         message.error({ key: 'session-expired', content: 'Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.' });
+        if (socket) {
+            socket.emit('forceLogout');
+            socket.disconnect();
+        }
         logout();
-    }, [logout, message]);
+    }, [logout, message, socket]);
 
     const fetchUserInfo = useCallback(async () => {
         if (!token) return;
@@ -117,7 +157,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     );
 };
 
-export const useUser = (): UserContextType => {
+export const useUser = () => {
     const context = useContext(UserContext);
     if (!context) throw new Error('useUser phải dùng trong UserProvider');
     return context;
