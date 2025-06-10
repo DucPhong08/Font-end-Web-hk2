@@ -157,7 +157,7 @@ const TaskTable = ({
             dataIndex: 'title',
             key: 'title',
             width: '25%',
-            align: 'center' as const,
+            align: 'left' as const,
             ellipsis: true,
             render: (_: any, record: TaskPayload) => {
                 const isEditing = editingField?.id === record.id && editingField?.field === 'title';
@@ -168,7 +168,7 @@ const TaskTable = ({
                         rules={[{ required: true, message: 'Vui lòng nhập tiêu đề!' }]}
                     >
                         <Input
-                            className="animate-fade-in hover:border-blue-400 focus:border-blue-400 transition-all duration-200"
+                            className="rounded-lg border-gray-300 hover:border-indigo-500 focus:border-indigo-500 transition-all duration-300 shadow-sm"
                             onPressEnter={() => handleFieldSave(record, 'title')}
                             defaultValue={record.title}
                             autoFocus
@@ -176,27 +176,31 @@ const TaskTable = ({
                                 <Space size="small">
                                     <Button
                                         type="text"
-                                        icon={<FontAwesomeIcon icon={faSave} className="text-green-500" />}
+                                        icon={<FontAwesomeIcon icon={faSave} className="text-green-600" />}
                                         onClick={() => handleFieldSave(record, 'title')}
-                                        className="!p-0 !h-6"
+                                        className="!p-0 !h-6 hover:scale-110 transition-transform duration-200"
+                                        aria-label="Lưu tiêu đề"
                                     />
                                     <Button
                                         type="text"
-                                        icon={<FontAwesomeIcon icon={faTimes} className="text-red-500" />}
+                                        icon={<FontAwesomeIcon icon={faTimes} className="text-red-600" />}
                                         onClick={() => handleFieldCancel()}
-                                        className="!p-0 !h-6"
+                                        className="!p-0 !h-6 hover:scale-110 transition-transform duration-200"
+                                        aria-label="Hủy chỉnh sửa"
                                     />
                                 </Space>
                             }
                         />
                     </Form.Item>
                 ) : (
-                    <span
-                        className="font-medium hover:text-blue-500 transition-all duration-200 cursor-pointer truncate block max-w-[120px] sm:max-w-[200px]"
-                        onClick={() => handleFieldEdit(record, 'title')}
-                    >
-                        {record.title}
-                    </span>
+                    <Tooltip title={record.title}>
+                        <span
+                            className="font-semibold text-gray-800 hover:text-indigo-600 transition-colors duration-200 cursor-pointer truncate block max-w-[150px] sm:max-w-[250px]"
+                            onClick={() => handleFieldEdit(record, 'title')}
+                        >
+                            {record.title}
+                        </span>
+                    </Tooltip>
                 );
             },
         },
@@ -206,7 +210,6 @@ const TaskTable = ({
             key: 'status',
             width: '12%',
             align: 'center' as const,
-            className: '!w-[100px] sm:!w-[12%]',
             responsive: ['sm'],
             filters: [
                 { text: 'Chưa thực hiện', value: 'todo' },
@@ -223,9 +226,10 @@ const TaskTable = ({
                         rules={[{ required: true, message: 'Vui lòng chọn trạng thái!' }]}
                     >
                         <Select
-                            className="hover:border-blue-400 focus:border-blue-400 transition-all duration-200"
+                            className="rounded-lg border-gray-300 hover:border-indigo-500 focus:border-indigo-500 transition-all duration-300 shadow-sm"
                             onBlur={() => handleFieldSave(record, 'status')}
                             autoFocus
+                            popupClassName="rounded-lg shadow-lg"
                         >
                             <Select.Option value="todo">Chưa thực hiện</Select.Option>
                             <Select.Option value="in_progress">Đang thực hiện</Select.Option>
@@ -235,7 +239,7 @@ const TaskTable = ({
                 ) : (
                     <Tag
                         color={getStatusColor(record.status)}
-                        className="px-2 py-1 text-xs sm:text-sm hover:opacity-80 transition-opacity duration-200 cursor-pointer"
+                        className="px-3 py-1 text-sm font-medium rounded-full hover:opacity-90 transition-opacity duration-200 cursor-pointer shadow-sm"
                         onClick={() => handleFieldEdit(record, 'status')}
                     >
                         {getStatusText(record.status)}
@@ -265,9 +269,10 @@ const TaskTable = ({
                         rules={[{ required: true, message: 'Vui lòng chọn độ ưu tiên!' }]}
                     >
                         <Select
-                            className="hover:border-blue-400 focus:border-blue-400 transition-all duration-200"
+                            className="rounded-lg border-gray-300 hover:border-indigo-500 focus:border-indigo-500 transition-all duration-300 shadow-sm"
                             onBlur={() => handleFieldSave(record, 'priority')}
                             autoFocus
+                            popupClassName="rounded-lg shadow-lg"
                         >
                             <Select.Option value="low">Thấp</Select.Option>
                             <Select.Option value="medium">Trung bình</Select.Option>
@@ -277,7 +282,7 @@ const TaskTable = ({
                 ) : (
                     <Tag
                         color={getPriorityColor(record.priority)}
-                        className="px-2 py-1 text-xs sm:text-sm hover:opacity-80 transition-opacity duration-200 cursor-pointer"
+                        className="px-3 py-1 text-sm font-medium rounded-full hover:opacity-90 transition-opacity duration-200 cursor-pointer shadow-sm"
                         onClick={() => handleFieldEdit(record, 'priority')}
                     >
                         {getPriorityText(record.priority)}
@@ -292,7 +297,7 @@ const TaskTable = ({
                       dataIndex: 'assigned_user_id',
                       key: 'assigned_user_id',
                       width: '20%',
-                      align: 'center' as const,
+                      align: 'left' as const,
                       ellipsis: true,
                       render: (_: any, record: TaskPayload) => {
                           const isEditing =
@@ -328,7 +333,8 @@ const TaskTable = ({
                                       filterOption={(input, option) =>
                                           (option?.label as string).toLowerCase().includes(input.toLowerCase())
                                       }
-                                      className="w-full hover:border-blue-400 focus:border-blue-400 transition-all duration-200"
+                                      className="rounded-lg border-gray-300 hover:border-indigo-500 focus:border-indigo-500 transition-all duration-300 shadow-sm"
+                                      popupClassName="rounded-lg shadow-lg"
                                       autoFocus
                                   >
                                       {teamMembers.map((user: UserProfile) => (
@@ -338,8 +344,11 @@ const TaskTable = ({
                                               label={`${user.full_name} (${getRoleText(user.role)})`}
                                           >
                                               <div className="flex items-center justify-between">
-                                                  <span className="font-medium">{user.full_name}</span>
-                                                  <Tag color={getRoleColor(user.role)} className="ml-2">
+                                                  <span className="font-medium text-gray-800">{user.full_name}</span>
+                                                  <Tag
+                                                      color={getRoleColor(user.role)}
+                                                      className="ml-2 rounded-full text-xs"
+                                                  >
                                                       {getRoleText(user.role)}
                                                   </Tag>
                                               </div>
@@ -348,23 +357,34 @@ const TaskTable = ({
                                   </Select>
                               </Form.Item>
                           ) : (
-                              <span
-                                  className="text-gray-600 hover:text-blue-500 transition-colors duration-200 cursor-pointer"
-                                  onClick={() => handleFieldEdit(record, 'assigned_user_id')}
+                              <Tooltip
+                                  title={
+                                      assignedUser
+                                          ? `${assignedUser.full_name} (${getRoleText(assignedUser.role)})`
+                                          : 'Chưa giao'
+                                  }
                               >
-                                  {assignedUser ? (
-                                      <div className="flex items-center">
-                                          <span className="truncate max-w-[80px] sm:max-w-[120px]">
-                                              {assignedUser.full_name}
-                                          </span>
-                                          <Tag color={getRoleColor(assignedUser.role)} className="ml-2 flex-shrink-0">
-                                              {getRoleText(assignedUser.role)}
-                                          </Tag>
-                                      </div>
-                                  ) : (
-                                      'Chưa giao'
-                                  )}
-                              </span>
+                                  <span
+                                      className="text-gray-700 hover:text-indigo-600 transition-colors duration-200 cursor-pointer flex items-center"
+                                      onClick={() => handleFieldEdit(record, 'assigned_user_id')}
+                                  >
+                                      {assignedUser ? (
+                                          <div className="flex items-center">
+                                              <span className="truncate max-w-[100px] sm:max-w-[150px] font-medium">
+                                                  {assignedUser.full_name}
+                                              </span>
+                                              <Tag
+                                                  color={getRoleColor(assignedUser.role)}
+                                                  className="ml-2 rounded-full text-xs"
+                                              >
+                                                  {getRoleText(assignedUser.role)}
+                                              </Tag>
+                                          </div>
+                                      ) : (
+                                          <span className="text-gray-400">Chưa giao</span>
+                                      )}
+                                  </span>
+                              </Tooltip>
                           );
                       },
                   },
@@ -395,26 +415,29 @@ const TaskTable = ({
                     date = dayjs();
                 }
                 const currentYear = dayjs().year();
-                const format = date.year() === currentYear ? 'DD/MM' : 'DD/MM/YYYY';
+                const format = date.year() === currentYear ? 'DD/MM HH:mm' : 'DD/MM/YYYY HH:mm';
 
                 return isEditing ? (
                     <Form.Item name="start_time" style={{ margin: 0 }}>
                         <DatePicker
                             showTime
-                            format="YYYY-MM-DD HH:mm"
+                            format="DD/MM/YYYY HH:mm"
                             defaultValue={date}
-                            className="w-full hover:border-blue-400 focus:border-blue-400 transition-all duration-200"
+                            className="rounded-lg border-gray-300 hover:border-indigo-500 focus:border-indigo-500 transition-all duration-300 shadow-sm"
                             onOk={(date) => handleDateChange(record, 'start_time', date)}
                             autoFocus
+                            popupClassName="rounded-lg shadow-lg"
                         />
                     </Form.Item>
                 ) : (
-                    <span
-                        className="text-gray-600 hover:text-blue-500 transition-colors duration-200 cursor-pointer text-xs sm:text-sm"
-                        onClick={() => handleFieldEdit(record, 'start_time')}
-                    >
-                        {date.format(format)}
-                    </span>
+                    <Tooltip title={date.format('DD/MM/YYYY HH:mm')}>
+                        <span
+                            className="text-gray-700 hover:text-indigo-600 transition-colors duration-200 cursor-pointer text-sm"
+                            onClick={() => handleFieldEdit(record, 'start_time')}
+                        >
+                            {date.format(format)}
+                        </span>
+                    </Tooltip>
                 );
             },
         },
@@ -424,8 +447,7 @@ const TaskTable = ({
             key: 'end_time',
             width: '13%',
             align: 'center' as const,
-            ellipsis: true,
-            className: '!w-[100px] sm:!w-[13%]',
+            responsive: ['sm'],
             sorter: (a, b) => new Date(a.end_time).getTime() - new Date(b.end_time).getTime(),
             render: (_: any, record: TaskPayload) => {
                 const isEditing = editingField?.id === record.id && editingField?.field === 'end_time';
@@ -444,26 +466,29 @@ const TaskTable = ({
                     date = dayjs();
                 }
                 const currentYear = dayjs().year();
-                const format = date.year() === currentYear ? 'DD/MM' : 'DD/MM/YYYY';
+                const format = date.year() === currentYear ? 'DD/MM HH:mm' : 'DD/MM/YYYY HH:mm';
 
                 return isEditing ? (
                     <Form.Item name="end_time" style={{ margin: 0 }}>
                         <DatePicker
                             showTime
-                            format="YYYY-MM-DD HH:mm"
+                            format="DD/MM/YYYY HH:mm"
                             defaultValue={date}
-                            className="w-full hover:border-blue-400 focus:border-blue-400 transition-all duration-200"
+                            className="rounded-lg border-gray-300 hover:border-indigo-500 focus:border-indigo-500 transition-all duration-300 shadow-sm"
                             onOk={(date) => handleDateChange(record, 'end_time', date)}
                             autoFocus
+                            popupClassName="rounded-lg shadow-lg"
                         />
                     </Form.Item>
                 ) : (
-                    <span
-                        className="text-gray-600 hover:text-blue-500 transition-colors duration-200 cursor-pointer text-xs sm:text-sm"
-                        onClick={() => handleFieldEdit(record, 'end_time')}
-                    >
-                        {date.format(format)}
-                    </span>
+                    <Tooltip title={date.format('DD/MM/YYYY HH:mm')}>
+                        <span
+                            className="text-gray-700 hover:text-indigo-600 transition-colors duration-200 cursor-pointer text-sm"
+                            onClick={() => handleFieldEdit(record, 'end_time')}
+                        >
+                            {date.format(format)}
+                        </span>
+                    </Tooltip>
                 );
             },
         },
@@ -472,17 +497,19 @@ const TaskTable = ({
             key: 'action',
             width: '15%',
             align: 'center' as const,
-            className: '!w-[120px] sm:!w-[15%]',
-            fixed: 'right',
+            fixed: 'right' as const,
             render: (_: any, record: TaskPayload) => {
                 return (
-                    <Space className="animate-fade-in w-full justify-center" size="small">
-                        <Button
-                            type="primary"
-                            onClick={() => handleViewDetail(record)}
-                            icon={<FontAwesomeIcon icon={faEye} className="text-sm sm:text-base" />}
-                            className="!bg-purple-500 hover:!bg-purple-600 transition-all duration-200 !w-6 !h-6 sm:!w-8 sm:!h-8 !p-0 flex items-center justify-center"
-                        />
+                    <Space className="animate-fade-in w-full justify-center" size="middle">
+                        <Tooltip title="Xem chi tiết">
+                            <Button
+                                type="text"
+                                onClick={() => handleViewDetail(record)}
+                                icon={<FontAwesomeIcon icon={faEye} className="text-indigo-600" />}
+                                className="!p-0 !h-8 hover:scale-110 transition-transform duration-200"
+                                aria-label="Xem chi tiết công việc"
+                            />
+                        </Tooltip>
                         <Popconfirm
                             title="Xóa công việc"
                             description="Bạn có chắc chắn muốn xóa công việc này?"
@@ -494,13 +521,17 @@ const TaskTable = ({
                             }}
                             okText="Xóa"
                             cancelText="Hủy"
-                            okButtonProps={{ danger: true }}
+                            okButtonProps={{ danger: true, className: 'rounded-lg' }}
+                            cancelButtonProps={{ className: 'rounded-lg' }}
                         >
-                            <Button
-                                type="primary"
-                                icon={<FontAwesomeIcon icon={faTrash} className="text-sm sm:text-base" />}
-                                className="!bg-red-500 hover:!bg-red-600 transition-all duration-200 !w-6 !h-6 sm:!w-8 sm:!h-8 !p-0 flex items-center justify-center"
-                            />
+                            <Tooltip title="Xóa công việc">
+                                <Button
+                                    type="text"
+                                    icon={<FontAwesomeIcon icon={faTrash} className="text-red-600" />}
+                                    className="!p-0 !h-8 hover:scale-110 transition-transform duration-200"
+                                    aria-label="Xóa công việc"
+                                />
+                            </Tooltip>
                         </Popconfirm>
                     </Space>
                 );
@@ -522,64 +553,77 @@ const TaskTable = ({
     };
 
     return (
-        <div className="bg-white rounded-lg shadow">
-            <div className="p-4 border-b border-gray-200">
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+            {/* Header Section */}
+            <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div className="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto">
+                    <div className="flex items-center space-x-4 w-full sm:w-auto">
                         <Button
                             type="primary"
                             icon={<PlusOutlined />}
                             onClick={onTaskCreated}
-                            className="!flex !items-center"
+                            className="!bg-indigo-600 hover:!bg-indigo-700 !rounded-lg !font-semibold !shadow-sm !transition-all !duration-200 !flex !items-center"
+                            aria-label="Thêm công việc mới"
                         >
                             <span className="hidden sm:inline">Thêm công việc</span>
                         </Button>
                     </div>
-                    <div className="flex items-center space-x-2 w-full sm:w-auto">
-                        <Tooltip title="Làm mới">
-                            <Button icon={<ReloadOutlined />} onClick={handleReset} className="!flex !items-center" />
+                    <div className="flex items-center space-x-3 w-full sm:w-auto">
+                        <Tooltip title="Làm mới danh sách">
+                            <Button
+                                type="text"
+                                icon={<ReloadOutlined className="text-gray-600" />}
+                                onClick={handleReset}
+                                className="!p-0 !h-10 hover:bg-gray-100 !rounded-lg !transition-all !duration-200"
+                                aria-label="Làm mới"
+                            />
                         </Tooltip>
                         <div className="relative flex-1 sm:flex-none">
                             <Input
-                                placeholder="Tìm kiếm..."
-                                prefix={<SearchOutlined />}
+                                placeholder="Tìm kiếm công việc..."
+                                prefix={<SearchOutlined className="text-gray-500" />}
                                 value={searchTitle}
                                 onChange={(e) => setSearchTitle(e.target.value)}
-                                className="w-full sm:w-48 md:w-64"
+                                className="w-full sm:w-64 rounded-lg border-gray-300 hover:border-indigo-500 focus:border-indigo-500 shadow-sm transition-all duration-300"
                                 allowClear
+                                aria-label="Tìm kiếm công việc"
                             />
                         </div>
-                        <Tooltip title="Lọc">
+                        <Tooltip title="Lọc công việc">
                             <Button
-                                icon={<FilterOutlined />}
+                                type="text"
+                                icon={<FilterOutlined className="text-gray-600" />}
                                 onClick={() => setIsFilterModalVisible(true)}
-                                className="!flex !items-center"
+                                className="!p-0 !h-10 hover:bg-gray-100 !rounded-lg !transition-all !duration-200"
+                                aria-label="Lọc công việc"
                             />
                         </Tooltip>
                     </div>
                 </div>
             </div>
 
+            {/* Table Section */}
             <Form form={form} component={false}>
-                <TaskTableContent
-                    loading={loading}
-                    error={error}
-                    onReload={onReload}
-                    searchText={searchTitle}
-                    setSearchText={setSearchTitle}
-                    filteredTasks={localTasks}
+                <Table
                     columns={columns}
-                    currentPage={currentPage}
-                    totalTasks={totalTasks}
-                    onPageChange={onPageChange}
-                    teamId={teamId}
-                    onEditTask={onEditTask}
-                    onDeleteTask={handleDeleteTask}
-                    teamMembers={teamMembers}
-                    onAssignTask={onAssignTask}
+                    dataSource={localTasks}
+                    loading={loading}
+                    rowKey="id"
+                    pagination={{
+                        current: currentPage,
+                        total: totalTasks,
+                        onChange: onPageChange,
+                        pageSize: 10,
+                        showSizeChanger: false,
+                        className: 'px-6 py-4',
+                    }}
+                    className="custom-table"
+                    rowClassName="hover:bg-gray-50 transition-colors duration-200"
+                    scroll={{ x: 'max-content' }}
                 />
             </Form>
 
+            {/* Filter Modal */}
             <FilterModal
                 visible={isFilterModalVisible}
                 onClose={() => setIsFilterModalVisible(false)}
@@ -588,16 +632,23 @@ const TaskTable = ({
                 teamMembers={teamMembers}
             />
 
+            {/* Task Details Drawer */}
             <Drawer
-                title={<div className="text-xl font-semibold text-gray-800">Chi tiết công việc</div>}
+                title={
+                    <div className="text-xl font-semibold text-gray-800 bg-gradient-to-r from-gray-50 to-white p-4 rounded-t-lg">
+                        Chi tiết công việc
+                    </div>
+                }
                 placement="right"
                 onClose={() => setDrawerVisible(false)}
                 open={drawerVisible}
                 closable
                 destroyOnHidden
-                width={window.innerWidth < 768 ? '100%' : '50%'}
+                width={window.innerWidth < 768 ? '100%' : 'min(50%, 600px)'}
+                className="rounded-l-xl shadow-xl"
+                closeIcon={<FontAwesomeIcon icon={faTimes} className="text-gray-600 hover:text-red-600" />}
             >
-                <div className="p-6">{renderTaskDetails()}</div>
+                <div className="p-6 space-y-6">{renderTaskDetails()}</div>
             </Drawer>
         </div>
     );

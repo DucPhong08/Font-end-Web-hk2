@@ -150,26 +150,7 @@ a {
 }
 
 
-.ant-table-custom .ant-table-thead > tr > th {
-    background: #f8fafc;
-    font-weight: 600;
-    color: #1f2937;
-    border-bottom: 1px solid #e5e7eb;
-    padding: 8px 12px;
-  }
-  
-  .ant-table-custom .ant-table-tbody > tr:hover > td {
-    background: #f1f5f9;
-  }
-  
-  .ant-table-custom .ant-table-cell {
-    border-color: #e5e7eb;
-    padding: 8px 12px;
-  }
-  
-  .ant-table-custom .ant-table-tbody > tr > td {
-    font-size: 14px;
-  }
+
   
   @media (max-width: 576px) {
     .ant-table-custom .ant-table-tbody > tr > td {

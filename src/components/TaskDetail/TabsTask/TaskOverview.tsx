@@ -52,7 +52,6 @@ const TaskOverview: React.FC<TaskOverviewProps> = ({
         fetchTeamMembers();
     }, [fetchTeamMembers]);
 
-    // Sync form values when editing starts or task changes
     useEffect(() => {
         if (isEditing) {
             form.setFieldsValue({
@@ -73,34 +72,50 @@ const TaskOverview: React.FC<TaskOverviewProps> = ({
     const assignedUser = teamMembers.find((user) => user.id === task.assigned_user_id);
 
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold mb-4 text-gray-800">Thông tin cơ bản</h3>
-                <Space>
+        <>
+            {/* Header Section */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <h3 className="text-2xl sm:text-3xl font-semibold text-gray-800">Thông tin công việc</h3>
+                <Space size="middle">
                     {isEditing ? (
                         <>
                             <Button
                                 type="primary"
                                 icon={<SaveOutlined />}
                                 onClick={onSave}
-                                className="bg-green-500 hover:bg-green-600"
+                                className="!bg-indigo-600 hover:!bg-indigo-700 !rounded-lg !font-semibold !shadow-sm !transition-all !duration-200"
+                                aria-label="Lưu thay đổi"
                             >
                                 Lưu
                             </Button>
                             <Button
                                 icon={<CloseOutlined />}
                                 onClick={onCancel}
-                                className="hover:border-red-400 hover:text-red-500"
+                                className="!border-gray-300 !text-gray-600 hover:!border-red-400 hover:!text-red-500 !rounded-lg !shadow-sm !transition-all !duration-200"
+                                aria-label="Hủy chỉnh sửa"
                             >
                                 Hủy
                             </Button>
                         </>
                     ) : (
                         <>
-                            <Button type="primary" icon={<EditOutlined />} onClick={onEdit}>
+                            <Button
+                                type="primary"
+                                icon={<EditOutlined />}
+                                onClick={onEdit}
+                                className="!bg-indigo-600 hover:!bg-indigo-700 !rounded-lg !font-semibold !shadow-sm !transition-all !duration-200"
+                                aria-label="Chỉnh sửa công việc"
+                            >
                                 Chỉnh sửa
                             </Button>
-                            <Button type="primary" danger icon={<DeleteOutlined />} onClick={onDelete}>
+                            <Button
+                                type="primary"
+                                danger
+                                icon={<DeleteOutlined />}
+                                onClick={onDelete}
+                                className="!bg-red-600 hover:!bg-red-700 !rounded-lg !font-semibold !shadow-sm !transition-all !duration-200"
+                                aria-label="Xóa công việc"
+                            >
                                 Xóa
                             </Button>
                         </>
@@ -108,25 +123,29 @@ const TaskOverview: React.FC<TaskOverviewProps> = ({
                 </Space>
             </div>
 
-            <Form form={form} layout="vertical">
-                {/* Tiêu đề */}
+            {/* Form Section */}
+            <Form form={form} layout="vertical" className="space-y-6">
+                {/* Title */}
                 <div>
-                    <p className="text-gray-600 mb-1 font-bold">Tiêu đề:</p>
+                    <label className="text-gray-700 font-semibold mb-2 block">Tiêu đề</label>
                     {isEditing ? (
                         <Form.Item
                             name="title"
                             rules={[{ required: true, message: 'Vui lòng nhập tiêu đề!' }]}
                             validateTrigger={['onBlur', 'onSubmit']}
                         >
-                            <Input className="hover:border-blue-400 focus:border-blue-400" />
+                            <Input
+                                className="rounded-lg border-gray-300 hover:border-indigo-500 focus:border-indigo-500 shadow-sm transition-all duration-300 text-xl sm:text-2xl"
+                                aria-label="Tiêu đề công việc"
+                            />
                         </Form.Item>
                     ) : (
                         <div className="flex flex-col">
                             <div
-                                className={`font-medium text-gray-800 ${
+                                className={`font-medium text-gray-800 text-xl sm:text-2xl ${
                                     showFullTitle
-                                        ? 'whitespace-normal max-w-full'
-                                        : 'max-w-[250px] overflow-hidden text-ellipsis whitespace-nowrap'
+                                        ? 'whitespace-normal'
+                                        : 'max-w-[350px] sm:max-w-[600px] overflow-hidden text-ellipsis whitespace-nowrap'
                                 }`}
                                 title={!showFullTitle ? task.title : undefined}
                             >
@@ -135,65 +154,84 @@ const TaskOverview: React.FC<TaskOverviewProps> = ({
                             {task.title.length > 30 && (
                                 <button
                                     type="button"
-                                    className="text-blue-500 underline text-sm mt-1 self-start"
+                                    className="text-indigo-600 hover:text-indigo-800 text-sm mt-2 self-start underline transition-colors duration-200"
                                     onClick={() => setShowFullTitle((prev) => !prev)}
+                                    aria-label={showFullTitle ? 'Ẩn tiêu đề đầy đủ' : 'Xem tiêu đề đầy đủ'}
                                 >
-                                    {showFullTitle ? 'Ẩn bớt' : 'Xem chi tiết'}
+                                    {showFullTitle ? 'Ẩn bớt' : 'Xem thêm'}
                                 </button>
                             )}
                         </div>
                     )}
                 </div>
 
-                {/* Trạng thái và độ ưu tiên */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Status and Priority */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
-                        <p className="text-gray-600 mb-1 font-bold">Trạng thái:</p>
+                        <label className="text-gray-700 font-semibold mb-2 block">Trạng thái</label>
                         {isEditing ? (
                             <Form.Item name="status" rules={[{ required: true, message: 'Vui lòng chọn trạng thái!' }]}>
-                                <Select className="hover:border-blue-400 focus:border-blue-400" allowClear>
+                                <Select
+                                    className="rounded-lg border-gray-300 hover:border-indigo-500 focus:border-indigo-500 shadow-sm transition-all duration-300"
+                                    allowClear
+                                    popupClassName="rounded-lg shadow-lg"
+                                    aria-label="Trạng thái công việc"
+                                >
                                     <Select.Option value="todo">Chưa thực hiện</Select.Option>
                                     <Select.Option value="in_progress">Đang thực hiện</Select.Option>
                                     <Select.Option value="done">Hoàn thành</Select.Option>
                                 </Select>
                             </Form.Item>
                         ) : (
-                            <Tag color={getStatusColor(task.status)} className="px-3 py-1">
+                            <Tag
+                                color={getStatusColor(task.status)}
+                                className="px-4 py-1 text-sm font-medium rounded-full shadow-sm"
+                            >
                                 {getStatusText(task.status)}
                             </Tag>
                         )}
                     </div>
                     <div>
-                        <p className="text-gray-600 mb-1 font-bold">Độ ưu tiên:</p>
+                        <label className="text-gray-700 font-semibold mb-2 block">Độ ưu tiên</label>
                         {isEditing ? (
                             <Form.Item
                                 name="priority"
                                 rules={[{ required: true, message: 'Vui lòng chọn độ ưu tiên!' }]}
                             >
-                                <Select className="hover:border-blue-400 focus:border-blue-400" allowClear>
+                                <Select
+                                    className="rounded-lg border-gray-300 hover:border-indigo-500 focus:border-indigo-500 shadow-sm transition-all duration-300"
+                                    allowClear
+                                    popupClassName="rounded-lg shadow-lg"
+                                    aria-label="Độ ưu tiên công việc"
+                                >
                                     <Select.Option value="low">Thấp</Select.Option>
                                     <Select.Option value="medium">Trung bình</Select.Option>
                                     <Select.Option value="high">Cao</Select.Option>
                                 </Select>
                             </Form.Item>
                         ) : (
-                            <Tag color={getPriorityColor(task.priority)} className="px-3 py-1">
+                            <Tag
+                                color={getPriorityColor(task.priority)}
+                                className="px-4 py-1 text-sm font-medium rounded-full shadow-sm"
+                            >
                                 {getPriorityText(task.priority)}
                             </Tag>
                         )}
                     </div>
                 </div>
 
-                {/* Thời gian bắt đầu và kết thúc */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Start and End Time */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
-                        <p className="text-gray-600 mb-1 font-bold">Thời gian bắt đầu:</p>
+                        <label className="text-gray-700 font-semibold mb-2 block">Thời gian bắt đầu</label>
                         {isEditing ? (
                             <Form.Item name="start_time">
                                 <DatePicker
                                     showTime
-                                    format="YYYY-MM-DD HH:mm"
-                                    className="w-full hover:border-blue-400 focus:border-blue-400"
+                                    format="DD/MM/YYYY HH:mm"
+                                    className="w-full rounded-lg border-gray-300 hover:border-indigo-500 focus:border-indigo-500 shadow-sm transition-all duration-300"
+                                    popupClassName="rounded-lg shadow-lg"
+                                    aria-label="Thời gian bắt đầu"
                                 />
                             </Form.Item>
                         ) : (
@@ -203,13 +241,15 @@ const TaskOverview: React.FC<TaskOverviewProps> = ({
                         )}
                     </div>
                     <div>
-                        <p className="text-gray-600 mb-1 font-bold">Thời gian kết thúc:</p>
+                        <label className="text-gray-700 font-semibold mb-2 block">Thời gian kết thúc</label>
                         {isEditing ? (
                             <Form.Item name="end_time">
                                 <DatePicker
                                     showTime
-                                    format="YYYY-MM-DD HH:mm"
-                                    className="w-full hover:border-blue-400 focus:border-blue-400"
+                                    format="DD/MM/YYYY HH:mm"
+                                    className="w-full rounded-lg border-gray-300 hover:border-indigo-500 focus:border-indigo-500 shadow-sm transition-all duration-300"
+                                    popupClassName="rounded-lg shadow-lg"
+                                    aria-label="Thời gian kết thúc"
                                 />
                             </Form.Item>
                         ) : (
@@ -220,16 +260,18 @@ const TaskOverview: React.FC<TaskOverviewProps> = ({
                     </div>
                 </div>
 
-                {/* Người thực hiện */}
+                {/* Assigned User */}
                 {teamId && (
                     <div>
-                        <p className="text-gray-600 mb-1 font-bold">Người thực hiện:</p>
+                        <label className="text-gray-700 font-semibold mb-2 block">Người thực hiện</label>
                         {loading ? (
-                            <Spin />
+                            <div className="flex justify-center py-4">
+                                <Spin aria-label="Đang tải danh sách thành viên" />
+                            </div>
                         ) : isEditing ? (
                             <Form.Item
                                 name="assigned_user_id"
-                                rules={[{ required: true, message: 'Chọn người thực hiện!' }]}
+                                rules={[{ required: true, message: 'Vui lòng chọn người thực hiện!' }]}
                             >
                                 <Select
                                     showSearch
@@ -237,8 +279,10 @@ const TaskOverview: React.FC<TaskOverviewProps> = ({
                                     filterOption={(input, option) =>
                                         (option?.label as string).toLowerCase().includes(input.toLowerCase())
                                     }
-                                    className="hover:border-blue-400 focus:border-blue-400"
+                                    className="rounded-lg border-gray-300 hover:border-indigo-500 focus:border-indigo-500 shadow-sm transition-all duration-300"
+                                    popupClassName="rounded-lg shadow-lg"
                                     optionLabelProp="label"
+                                    aria-label="Người thực hiện"
                                 >
                                     {teamMembers.map((user) => (
                                         <Select.Option
@@ -247,8 +291,10 @@ const TaskOverview: React.FC<TaskOverviewProps> = ({
                                             label={`${user.full_name} (${user.role})`}
                                         >
                                             <div className="flex items-center justify-between">
-                                                <span className="font-medium">{user.full_name}</span>
-                                                <small className="text-gray-400">{user.role}</small>
+                                                <span className="font-medium text-gray-800">{user.full_name}</span>
+                                                <Tag color="blue" className="ml-2 text-xs rounded-full shadow-sm">
+                                                    {user.role}
+                                                </Tag>
                                             </div>
                                         </Select.Option>
                                     ))}
@@ -259,7 +305,7 @@ const TaskOverview: React.FC<TaskOverviewProps> = ({
                                 {assignedUser ? (
                                     <>
                                         <span className="font-medium text-gray-800">{assignedUser.full_name}</span>
-                                        <Tag color="blue" className="ml-2">
+                                        <Tag color="blue" className="ml-2 text-xs rounded-full shadow-sm">
                                             {assignedUser.role}
                                         </Tag>
                                     </>
@@ -271,23 +317,27 @@ const TaskOverview: React.FC<TaskOverviewProps> = ({
                     </div>
                 )}
 
-                {/* Mô tả */}
+                {/* Description */}
                 <div>
-                    <p className="text-gray-600 mb-1 font-bold">Mô tả:</p>
+                    <label className="text-gray-700 font-semibold mb-2 block">Mô tả</label>
                     {isEditing ? (
                         <Form.Item
                             name="description"
-                            rules={[{ required: true, message: 'Nhập mô tả!' }]}
+                            rules={[{ required: true, message: 'Vui lòng nhập mô tả!' }]}
                             validateTrigger={['onBlur', 'onSubmit']}
                         >
-                            <TextArea rows={3} className="hover:border-blue-400 focus:border-blue-400" />
+                            <Input.TextArea
+                                rows={4}
+                                className="rounded-lg border-gray-300 hover:border-indigo-500 focus:border-indigo-500 shadow-sm transition-all duration-300"
+                                aria-label="Mô tả công việc"
+                            />
                         </Form.Item>
                     ) : (
-                        <p className="text-gray-800 whitespace-pre-wrap">{task.description}</p>
+                        <p className="text-gray-800 whitespace-pre-wrap leading-relaxed">{task.description || '-'}</p>
                     )}
                 </div>
             </Form>
-        </div>
+        </>
     );
 };
 
