@@ -211,7 +211,7 @@ const UserManagement = () => {
                         <Button
                             type="text"
                             icon={<EditOutlined />}
-                            className="text-blue-600 hover:text-blue-800"
+                            className="!px-2 !py-1 bg-blue-100 hover:bg-blue-200 hover:text-blue-800 rounded-full transition-all duration-200 shadow-sm"
                             onClick={() => {
                                 setEditingUser(record);
                                 setModalVisible(true);
@@ -227,11 +227,13 @@ const UserManagement = () => {
                             onConfirm={() => handleDeleteUser(record.id.toString())}
                             okText="Có"
                             cancelText="Không"
+                            okButtonProps={{ danger: true, className: 'bg-red-600 hover:bg-red-700 rounded-lg' }}
+                            cancelButtonProps={{ className: 'rounded-lg' }}
                         >
                             <Button
                                 type="text"
                                 icon={<DeleteOutlined />}
-                                className="text-red-600 hover:text-red-800"
+                                className="!px-2 !py-1 bg-red-100 hover:bg-red-200 hover:text-red-800 rounded-full transition-all duration-200 shadow-sm"
                                 size="small"
                             />
                         </Popconfirm>
