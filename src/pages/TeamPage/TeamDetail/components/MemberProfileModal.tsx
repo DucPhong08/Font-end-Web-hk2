@@ -86,33 +86,46 @@ const MemberProfileModal: React.FC<MemberProfileModalProps> = ({ isOpen, onClose
             open={isOpen}
             onCancel={onClose}
             footer={null}
-            width={600}
+            width="90%"
+            style={{ maxWidth: '600px' }}
             className="member-profile-modal"
+            centered
         >
             {loading ? (
                 <div className="flex justify-center items-center h-40">
                     <Spin size="large" />
                 </div>
             ) : profile ? (
-                <div className="space-y-6">
-                    <div className="flex items-center space-x-4">
+                <div className="space-y-4 md:space-y-6">
+                    <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-4">
                         <Avatar size={80} src={member.avatar_url} className="border-2 border-gray-200">
                             {member.full_name?.[0]?.toUpperCase() || '?'}
                         </Avatar>
-                        <div>
-                            <h3 className="text-xl font-semibold">{member.full_name}</h3>
-                            <p className="text-gray-500">{profile.email}</p>
-                            <div className="mt-2 space-x-2">
+                        <div className="text-center md:text-left">
+                            <h3 className="text-xl font-semibold break-words">{member.full_name}</h3>
+                            <p className="text-gray-500 break-all">{profile.email}</p>
+                            <div className="mt-2 space-x-2 flex flex-wrap justify-center md:justify-start gap-2">
                                 {getRoleTag(member.role)}
                                 {getStatusTag(profile.status || '')}
                             </div>
                         </div>
                     </div>
 
-                    <Descriptions bordered column={1} className="bg-white">
+                    <Descriptions
+                        bordered
+                        column={1}
+                        className="bg-white"
+                        size="small"
+                        labelStyle={{
+                            width: '120px',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                        }}
+                    >
                         <Descriptions.Item label="ID">{member.id}</Descriptions.Item>
                         <Descriptions.Item label="Email">
-                            <span className="font-medium text-blue-600">{profile.email}</span>
+                            <span className="font-medium text-blue-600 break-all">{profile.email}</span>
                         </Descriptions.Item>
                         <Descriptions.Item label="Chức vụ trong nhóm">
                             {member.role === ROLES.CREATOR
@@ -125,7 +138,9 @@ const MemberProfileModal: React.FC<MemberProfileModalProps> = ({ isOpen, onClose
                             {profile.status === 'active' ? 'Hoạt động' : 'Không hoạt động'}
                         </Descriptions.Item>
                         {profile.phone_number && (
-                            <Descriptions.Item label="Số điện thoại">{profile.phone_number}</Descriptions.Item>
+                            <Descriptions.Item label="Số điện thoại">
+                                <span className="break-all">{profile.phone_number}</span>
+                            </Descriptions.Item>
                         )}
                         {profile.gender && (
                             <Descriptions.Item label="Giới tính">{getGenderText(profile.gender)}</Descriptions.Item>
@@ -139,10 +154,14 @@ const MemberProfileModal: React.FC<MemberProfileModalProps> = ({ isOpen, onClose
                                 })}
                             </Descriptions.Item>
                         )}
-                        {profile.address && <Descriptions.Item label="Địa chỉ">{profile.address}</Descriptions.Item>}
+                        {profile.address && (
+                            <Descriptions.Item label="Địa chỉ">
+                                <span className="break-words">{profile.address}</span>
+                            </Descriptions.Item>
+                        )}
                         {profile.bio && (
                             <Descriptions.Item label="Giới thiệu">
-                                <div className="whitespace-pre-wrap">{profile.bio}</div>
+                                <div className="whitespace-pre-wrap break-words">{profile.bio}</div>
                             </Descriptions.Item>
                         )}
                     </Descriptions>
