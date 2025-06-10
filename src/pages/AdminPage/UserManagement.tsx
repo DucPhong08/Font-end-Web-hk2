@@ -326,7 +326,10 @@ const UserManagement = () => {
                             { type: 'email', message: 'Email không hợp lệ' },
                         ]}
                     >
-                        <Input disabled={!!editingUser} className="rounded-md border-gray-300 focus:border-blue-500" />
+                        <Input
+                            disabled={!!editingUser}
+                            className="rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:ring-blue-500 focus:outline-none transition duration-150 ease-in-out"
+                        />
                     </Form.Item>
 
                     <Form.Item
@@ -334,7 +337,7 @@ const UserManagement = () => {
                         label={<span className="font-medium text-gray-700">Họ và tên</span>}
                         rules={[{ required: true, message: 'Vui lòng nhập họ và tên' }]}
                     >
-                        <Input className="rounded-md border-gray-300 focus:border-blue-500" />
+                        <Input className="rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:ring-blue-500 focus:outline-none transition duration-150 ease-in-out" />
                     </Form.Item>
 
                     {!editingUser && (
@@ -346,7 +349,7 @@ const UserManagement = () => {
                                 { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự' },
                             ]}
                         >
-                            <Input.Password className="rounded-md border-gray-300 focus:border-blue-500" />
+                            <Input.Password className="rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:ring-blue-500 focus:outline-none transition duration-150 ease-in-out" />
                         </Form.Item>
                     )}
 
@@ -383,7 +386,7 @@ const UserManagement = () => {
                         label={<span className="font-medium text-gray-700">Vai trò</span>}
                         rules={[{ required: true, message: 'Vui lòng chọn vai trò' }]}
                     >
-                        <Select className="rounded-md">
+                        <Select>
                             <Select.Option value="member">Thành viên</Select.Option>
                             <Select.Option value="admin">Quản trị viên</Select.Option>
                         </Select>

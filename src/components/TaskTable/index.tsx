@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Input, Space, Tag, Button, Drawer, Select, DatePicker, Form, Popconfirm, Table, Tooltip } from 'antd';
+import { Input, Space, Tag, Button, Drawer, Select, DatePicker, Form, Popconfirm, Table } from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import { TaskPayload, UserProfile } from '@services/types/types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -19,7 +19,6 @@ import { TaskTableContentProps } from './types';
 import TaskDetails from '../TaskDetail/TaskDetails';
 import FilterModal from './FilterModal';
 import { SearchOutlined, FilterOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons';
-import TaskTableContent from './TaskTableContent';
 
 dayjs.extend(utc);
 
@@ -47,18 +46,19 @@ const TaskTable = ({
     const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
     const [searchTitle, setSearchTitle] = useState('');
     const [filters, setFilters] = useState<any>({});
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
     const debouncedSearchTitle = useDebounce(searchTitle, 500);
 
     useEffect(() => {
-        setLocalTasks(tasks);
-    }, [tasks]);
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
-        if (onFilter) {
-            onFilter({ ...filters, searchTitle: debouncedSearchTitle });
-        }
-    }, [debouncedSearchTitle, filters]);
+        setLocalTasks(tasks);
+    }, [tasks]);
 
     const handleFieldSave = async (record: TaskPayload, field: string) => {
         try {
@@ -67,24 +67,14 @@ const TaskTable = ({
 
             if (field.includes('time')) {
                 const date = dayjs(value[field]);
-                if (!date.isValid()) {
-                    return;
-                }
-                try {
-                    newValue = date.format('YYYY-MM-DD HH:mm:ss');
-                } catch (error) {
-                    console.error('Error formatting date:', error);
-                    return;
-                }
+                if (!date.isValid()) return;
+                newValue = date.format('YYYY-MM-DD HH:mm:ss');
             } else {
                 newValue = value[field];
             }
 
             if (newValue !== record[field as keyof TaskPayload]) {
-                const updatedTask = {
-                    ...record,
-                    [field]: newValue,
-                } as TaskPayload;
+                const updatedTask = { ...record, [field]: newValue } as TaskPayload;
                 await onEditTask(updatedTask);
             }
             setEditingField(null);
@@ -95,18 +85,11 @@ const TaskTable = ({
     };
 
     const handleDateChange = (record: TaskPayload, field: string, date: dayjs.Dayjs | null) => {
-        if (date) {
-            try {
-                const formattedDate = date.format('YYYY-MM-DD HH:mm:ss');
-                if (formattedDate !== record[field as keyof TaskPayload]) {
-                    const updatedTask = {
-                        ...record,
-                        [field]: formattedDate,
-                    } as TaskPayload;
-                    onEditTask(updatedTask);
-                }
-            } catch (error) {
-                console.error('Error formatting date:', error);
+        if (date && date.isValid()) {
+            const formattedDate = date.format('YYYY-MM-DD HH:mm:ss');
+            if (formattedDate !== record[field as keyof TaskPayload]) {
+                const updatedTask = { ...record, [field]: formattedDate } as TaskPayload;
+                onEditTask(updatedTask);
             }
         }
         setEditingField(null);
@@ -116,6 +99,7 @@ const TaskTable = ({
     const handleDeleteTask = async (taskId: string | number) => {
         try {
             await onDeleteTask(taskId);
+            if (onReload) onReload();
         } catch (error) {
             console.error('Error deleting task:', error);
         }
@@ -125,7 +109,7 @@ const TaskTable = ({
         setEditingField({ id: record.id!, field });
         const value = record[field as keyof TaskPayload];
         form.setFieldsValue({
-            [field]: field.includes('time') ? dayjs(value) : value,
+            [field]: field.includes('time') && value ? dayjs(value) : value,
         });
     };
 
@@ -139,11 +123,20 @@ const TaskTable = ({
         onPageChange(1);
     };
 
+    const handleSearch = (value: string) => {
+        if (onFilter) {
+            onFilter({ ...filters, searchTitle: value, page: 1 });
+        }
+        setSearchTitle(value);
+    };
+
     const handleReset = () => {
         setSearchTitle('');
         setFilters({});
         form.resetFields();
-        onPageChange(1);
+        if (onFilter) {
+            onFilter({ searchTitle: '', ...{}, page: 1 });
+        }
     };
 
     const handleViewDetail = (task: TaskPayload) => {
@@ -156,7 +149,7 @@ const TaskTable = ({
             title: 'Tiêu đề',
             dataIndex: 'title',
             key: 'title',
-            width: '25%',
+            width: isMobile ? '30%' : '25%',
             align: 'left' as const,
             ellipsis: true,
             render: (_: any, record: TaskPayload) => {
@@ -168,7 +161,7 @@ const TaskTable = ({
                         rules={[{ required: true, message: 'Vui lòng nhập tiêu đề!' }]}
                     >
                         <Input
-                            className="rounded-lg border-gray-300 hover:border-indigo-500 focus:border-indigo-500 transition-all duration-300 shadow-sm"
+                            className="rounded-lg border-gray-300 hover:border-indigo-500 focus:border-indigo-500 transition-all duration-300 shadow-sm text-base sm:text-lg"
                             onPressEnter={() => handleFieldSave(record, 'title')}
                             defaultValue={record.title}
                             autoFocus
@@ -184,7 +177,7 @@ const TaskTable = ({
                                     <Button
                                         type="text"
                                         icon={<FontAwesomeIcon icon={faTimes} className="text-red-600" />}
-                                        onClick={() => handleFieldCancel()}
+                                        onClick={handleFieldCancel}
                                         className="!p-0 !h-6 hover:scale-110 transition-transform duration-200"
                                         aria-label="Hủy chỉnh sửa"
                                     />
@@ -193,14 +186,13 @@ const TaskTable = ({
                         />
                     </Form.Item>
                 ) : (
-                    <Tooltip title={record.title}>
-                        <span
-                            className="font-semibold text-gray-800 hover:text-indigo-600 transition-colors duration-200 cursor-pointer truncate block max-w-[150px] sm:max-w-[250px]"
-                            onClick={() => handleFieldEdit(record, 'title')}
-                        >
-                            {record.title}
-                        </span>
-                    </Tooltip>
+                    <span
+                        className="font-semibold text-gray-800 hover:text-indigo-600 transition-colors duration-200 cursor-pointer truncate block max-w-[150px] sm:max-w-[250px] text-base sm:text-lg"
+                        onClick={() => handleFieldEdit(record, 'title')}
+                        title={record.title}
+                    >
+                        {record.title}
+                    </span>
                 );
             },
         },
@@ -208,7 +200,7 @@ const TaskTable = ({
             title: 'Trạng thái',
             dataIndex: 'status',
             key: 'status',
-            width: '12%',
+            width: isMobile ? '15%' : '12%',
             align: 'center' as const,
             responsive: ['sm'],
             filters: [
@@ -251,7 +243,7 @@ const TaskTable = ({
             title: 'Độ ưu tiên',
             dataIndex: 'priority',
             key: 'priority',
-            width: '12%',
+            width: isMobile ? '15%' : '12%',
             align: 'center' as const,
             responsive: ['sm'],
             filters: [
@@ -296,7 +288,7 @@ const TaskTable = ({
                       title: 'Người thực hiện',
                       dataIndex: 'assigned_user_id',
                       key: 'assigned_user_id',
-                      width: '20%',
+                      width: isMobile ? '25%' : '20%',
                       align: 'left' as const,
                       ellipsis: true,
                       render: (_: any, record: TaskPayload) => {
@@ -319,10 +311,7 @@ const TaskTable = ({
                                           if (record.id && onAssignTask) {
                                               try {
                                                   await onAssignTask(Number(record.id), value);
-                                                  const updatedTask = {
-                                                      ...record,
-                                                      assigned_user_id: value,
-                                                  };
+                                                  const updatedTask = { ...record, assigned_user_id: value };
                                                   await onEditTask(updatedTask);
                                                   setEditingField(null);
                                               } catch (error) {
@@ -334,8 +323,8 @@ const TaskTable = ({
                                           (option?.label as string).toLowerCase().includes(input.toLowerCase())
                                       }
                                       className="rounded-lg border-gray-300 hover:border-indigo-500 focus:border-indigo-500 transition-all duration-300 shadow-sm"
-                                      popupClassName="rounded-lg shadow-lg"
                                       autoFocus
+                                      popupClassName="rounded-lg shadow-lg"
                                   >
                                       {teamMembers.map((user: UserProfile) => (
                                           <Select.Option
@@ -347,7 +336,7 @@ const TaskTable = ({
                                                   <span className="font-medium text-gray-800">{user.full_name}</span>
                                                   <Tag
                                                       color={getRoleColor(user.role)}
-                                                      className="ml-2 rounded-full text-xs"
+                                                      className="ml-2 rounded-full text-xs shadow-sm"
                                                   >
                                                       {getRoleText(user.role)}
                                                   </Tag>
@@ -357,34 +346,31 @@ const TaskTable = ({
                                   </Select>
                               </Form.Item>
                           ) : (
-                              <Tooltip
+                              <span
+                                  className="text-gray-700 hover:text-indigo-600 transition-colors duration-200 cursor-pointer flex items-center text-base sm:text-lg"
+                                  onClick={() => handleFieldEdit(record, 'assigned_user_id')}
                                   title={
                                       assignedUser
                                           ? `${assignedUser.full_name} (${getRoleText(assignedUser.role)})`
                                           : 'Chưa giao'
                                   }
                               >
-                                  <span
-                                      className="text-gray-700 hover:text-indigo-600 transition-colors duration-200 cursor-pointer flex items-center"
-                                      onClick={() => handleFieldEdit(record, 'assigned_user_id')}
-                                  >
-                                      {assignedUser ? (
-                                          <div className="flex items-center">
-                                              <span className="truncate max-w-[100px] sm:max-w-[150px] font-medium">
-                                                  {assignedUser.full_name}
-                                              </span>
-                                              <Tag
-                                                  color={getRoleColor(assignedUser.role)}
-                                                  className="ml-2 rounded-full text-xs"
-                                              >
-                                                  {getRoleText(assignedUser.role)}
-                                              </Tag>
-                                          </div>
-                                      ) : (
-                                          <span className="text-gray-400">Chưa giao</span>
-                                      )}
-                                  </span>
-                              </Tooltip>
+                                  {assignedUser ? (
+                                      <div className="flex items-center">
+                                          <span className="truncate max-w-[100px] sm:max-w-[150px] font-medium">
+                                              {assignedUser.full_name}
+                                          </span>
+                                          <Tag
+                                              color={getRoleColor(assignedUser.role)}
+                                              className="ml-2 rounded-full text-xs shadow-sm"
+                                          >
+                                              {getRoleText(assignedUser.role)}
+                                          </Tag>
+                                      </div>
+                                  ) : (
+                                      <span className="text-gray-400">Chưa giao</span>
+                                  )}
+                              </span>
                           );
                       },
                   },
@@ -394,7 +380,7 @@ const TaskTable = ({
             title: 'Thời gian bắt đầu',
             dataIndex: 'start_time',
             key: 'start_time',
-            width: '13%',
+            width: isMobile ? '15%' : '13%',
             align: 'center' as const,
             responsive: ['sm'],
             sorter: (a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime(),
@@ -403,14 +389,8 @@ const TaskTable = ({
                 let date;
                 try {
                     const timeStr = record.start_time;
-                    if (timeStr.includes('T')) {
-                        date = dayjs(timeStr);
-                    } else {
-                        date = dayjs(timeStr);
-                    }
-                    if (!date.isValid()) {
-                        date = dayjs();
-                    }
+                    date = dayjs(timeStr);
+                    if (!date.isValid()) date = dayjs();
                 } catch (error) {
                     date = dayjs();
                 }
@@ -430,14 +410,13 @@ const TaskTable = ({
                         />
                     </Form.Item>
                 ) : (
-                    <Tooltip title={date.format('DD/MM/YYYY HH:mm')}>
-                        <span
-                            className="text-gray-700 hover:text-indigo-600 transition-colors duration-200 cursor-pointer text-sm"
-                            onClick={() => handleFieldEdit(record, 'start_time')}
-                        >
-                            {date.format(format)}
-                        </span>
-                    </Tooltip>
+                    <span
+                        className="text-gray-700 hover:text-indigo-600 transition-colors duration-200 cursor-pointer text-sm sm:text-base"
+                        onClick={() => handleFieldEdit(record, 'start_time')}
+                        title={date.format('DD/MM/YYYY HH:mm')}
+                    >
+                        {date.format(format)}
+                    </span>
                 );
             },
         },
@@ -445,7 +424,7 @@ const TaskTable = ({
             title: 'Thời gian kết thúc',
             dataIndex: 'end_time',
             key: 'end_time',
-            width: '13%',
+            width: isMobile ? '15%' : '13%',
             align: 'center' as const,
             responsive: ['sm'],
             sorter: (a, b) => new Date(a.end_time).getTime() - new Date(b.end_time).getTime(),
@@ -454,14 +433,8 @@ const TaskTable = ({
                 let date;
                 try {
                     const timeStr = record.end_time;
-                    if (timeStr.includes('T')) {
-                        date = dayjs(timeStr);
-                    } else {
-                        date = dayjs(timeStr);
-                    }
-                    if (!date.isValid()) {
-                        date = dayjs();
-                    }
+                    date = dayjs(timeStr);
+                    if (!date.isValid()) date = dayjs();
                 } catch (error) {
                     date = dayjs();
                 }
@@ -481,61 +454,55 @@ const TaskTable = ({
                         />
                     </Form.Item>
                 ) : (
-                    <Tooltip title={date.format('DD/MM/YYYY HH:mm')}>
-                        <span
-                            className="text-gray-700 hover:text-indigo-600 transition-colors duration-200 cursor-pointer text-sm"
-                            onClick={() => handleFieldEdit(record, 'end_time')}
-                        >
-                            {date.format(format)}
-                        </span>
-                    </Tooltip>
+                    <span
+                        className="text-gray-700 hover:text-indigo-600 transition-colors duration-200 cursor-pointer text-sm sm:text-base"
+                        onClick={() => handleFieldEdit(record, 'end_time')}
+                        title={date.format('DD/MM/YYYY HH:mm')}
+                    >
+                        {date.format(format)}
+                    </span>
                 );
             },
         },
         {
             title: 'Thao tác',
             key: 'action',
-            width: '15%',
+            fixed: 'right',
+            width: isMobile ? 80 : 130,
             align: 'center' as const,
-            fixed: 'right' as const,
-            render: (_: any, record: TaskPayload) => {
-                return (
-                    <Space className="animate-fade-in w-full justify-center" size="middle">
-                        <Tooltip title="Xem chi tiết">
-                            <Button
-                                type="text"
-                                onClick={() => handleViewDetail(record)}
-                                icon={<FontAwesomeIcon icon={faEye} className="text-indigo-600" />}
-                                className="!p-0 !h-8 hover:scale-110 transition-transform duration-200"
-                                aria-label="Xem chi tiết công việc"
-                            />
-                        </Tooltip>
-                        <Popconfirm
-                            title="Xóa công việc"
-                            description="Bạn có chắc chắn muốn xóa công việc này?"
-                            onConfirm={() => {
-                                const taskId = record.id;
-                                if (taskId) {
-                                    handleDeleteTask(taskId);
-                                }
-                            }}
-                            okText="Xóa"
-                            cancelText="Hủy"
-                            okButtonProps={{ danger: true, className: 'rounded-lg' }}
-                            cancelButtonProps={{ className: 'rounded-lg' }}
-                        >
-                            <Tooltip title="Xóa công việc">
-                                <Button
-                                    type="text"
-                                    icon={<FontAwesomeIcon icon={faTrash} className="text-red-600" />}
-                                    className="!p-0 !h-8 hover:scale-110 transition-transform duration-200"
-                                    aria-label="Xóa công việc"
-                                />
-                            </Tooltip>
-                        </Popconfirm>
-                    </Space>
-                );
-            },
+            render: (_: any, record: TaskPayload) => (
+                <Space size="small" className="animate-fade-in w-full justify-center">
+                    <Button
+                        type="text"
+                        size="small"
+                        icon={<FontAwesomeIcon icon={faEye} className="text-indigo-600" />}
+                        className="!px-2 !py-1 bg-indigo-100 hover:bg-indigo-200 hover:text-indigo-800 rounded-full transition-all duration-200 shadow-sm"
+                        onClick={() => handleViewDetail(record)}
+                        aria-label="Xem chi tiết công việc"
+                    >
+                        {!isMobile && 'Xem'}
+                    </Button>
+                    <Popconfirm
+                        title="Bạn có chắc chắn muốn xóa công việc này?"
+                        onConfirm={() => {
+                            const taskId = record.id;
+                            if (taskId) handleDeleteTask(taskId);
+                        }}
+                        okText="Có"
+                        cancelText="Không"
+                        okButtonProps={{ danger: true, className: 'bg-red-600 hover:bg-red-700 rounded-lg' }}
+                        cancelButtonProps={{ className: 'rounded-lg' }}
+                    >
+                        <Button
+                            type="text"
+                            size="small"
+                            icon={<FontAwesomeIcon icon={faTrash} className="text-red-600" />}
+                            className="!px-2 !py-1 bg-red-100 hover:bg-red-200 hover:text-red-800 rounded-full transition-all duration-200 shadow-sm"
+                            aria-label="Xóa công việc"
+                        />
+                    </Popconfirm>
+                </Space>
+            ),
         },
     ];
 
@@ -569,35 +536,31 @@ const TaskTable = ({
                         </Button>
                     </div>
                     <div className="flex items-center space-x-3 w-full sm:w-auto">
-                        <Tooltip title="Làm mới danh sách">
-                            <Button
-                                type="text"
-                                icon={<ReloadOutlined className="text-gray-600" />}
-                                onClick={handleReset}
-                                className="!p-0 !h-10 hover:bg-gray-100 !rounded-lg !transition-all !duration-200"
-                                aria-label="Làm mới"
-                            />
-                        </Tooltip>
+                        <Button
+                            type="text"
+                            icon={<ReloadOutlined className="text-gray-600" />}
+                            onClick={handleReset}
+                            className="!p-2 !h-10 hover:bg-gray-100 !rounded-lg !transition-all !duration-200"
+                            aria-label="Làm mới danh sách"
+                        />
                         <div className="relative flex-1 sm:flex-none">
                             <Input
                                 placeholder="Tìm kiếm công việc..."
                                 prefix={<SearchOutlined className="text-gray-500" />}
                                 value={searchTitle}
-                                onChange={(e) => setSearchTitle(e.target.value)}
+                                onChange={(e) => handleSearch(e.target.value)}
                                 className="w-full sm:w-64 rounded-lg border-gray-300 hover:border-indigo-500 focus:border-indigo-500 shadow-sm transition-all duration-300"
                                 allowClear
                                 aria-label="Tìm kiếm công việc"
                             />
                         </div>
-                        <Tooltip title="Lọc công việc">
-                            <Button
-                                type="text"
-                                icon={<FilterOutlined className="text-gray-600" />}
-                                onClick={() => setIsFilterModalVisible(true)}
-                                className="!p-0 !h-10 hover:bg-gray-100 !rounded-lg !transition-all !duration-200"
-                                aria-label="Lọc công việc"
-                            />
-                        </Tooltip>
+                        <Button
+                            type="text"
+                            icon={<FilterOutlined className="text-gray-600" />}
+                            onClick={() => setIsFilterModalVisible(true)}
+                            className="!p-2 !h-10 hover:bg-gray-100 !rounded-lg !transition-all !duration-200"
+                            aria-label="Lọc công việc"
+                        />
                     </div>
                 </div>
             </div>
@@ -632,10 +595,9 @@ const TaskTable = ({
                 teamMembers={teamMembers}
             />
 
-            {/* Task Details Drawer */}
             <Drawer
                 title={
-                    <div className="text-xl font-semibold text-gray-800 bg-gradient-to-r from-gray-50 to-white p-4 rounded-t-lg">
+                    <div className="text-xl sm:text-2xl font-semibold text-gray-800 bg-gradient-to-r from-gray-50 to-white p-4 rounded-t-lg">
                         Chi tiết công việc
                     </div>
                 }
@@ -643,8 +605,7 @@ const TaskTable = ({
                 onClose={() => setDrawerVisible(false)}
                 open={drawerVisible}
                 closable
-                destroyOnHidden
-                width={window.innerWidth < 768 ? '100%' : 'min(50%, 600px)'}
+                width={isMobile ? '100%' : 'min(50%, 600px)'}
                 className="rounded-l-xl shadow-xl"
                 closeIcon={<FontAwesomeIcon icon={faTimes} className="text-gray-600 hover:text-red-600" />}
             >

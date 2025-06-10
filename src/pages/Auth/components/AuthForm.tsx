@@ -50,7 +50,6 @@ const AuthForm = () => {
                 </div>
             </div>
 
-            {/* Overlay */}
             <div className="w-full md:w-1/2 mt-auto md:mt-0">
                 <Overlay isLoginActive={isLoginActive} toggleActive={toggleActive} />
             </div>

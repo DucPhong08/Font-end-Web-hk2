@@ -107,7 +107,7 @@ const ProfilePage = () => {
     );
 
     return (
-        <div className=" md:px-8">
+        <div className="md:px-8">
             {contextHolder}
             <div className="mx-auto">
                 <Card className="shadow-xl border-separate bg-white">
@@ -145,18 +145,40 @@ const ProfilePage = () => {
 
                     <Form form={form} layout="vertical" onFinish={handleProfileUpdate} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <Form.Item name="full_name" label="Họ tên" rules={[{ required: true }]}>
-                                <Input prefix={<UserOutlined />} placeholder="Enter full name" />
+                            <Form.Item
+                                name="full_name"
+                                label="Họ tên"
+                                rules={[
+                                    { required: true, message: 'Vui lòng nhập họ tên' },
+                                    { min: 2, message: 'Họ tên tối thiểu 2 ký tự' },
+                                ]}
+                            >
+                                <Input prefix={<UserOutlined />} placeholder="Nhập họ tên" />
                             </Form.Item>
-                            <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email' }]}>
+                            <Form.Item
+                                name="email"
+                                label="Email"
+                                rules={[{ required: true, type: 'email', message: 'Email không hợp lệ' }]}
+                            >
                                 <Input prefix={<MailOutlined />} disabled />
                             </Form.Item>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <Form.Item name="phone_number" label="Số điện thoại" rules={[{ required: true }]}>
-                                <Input prefix={<PhoneOutlined />} placeholder="Enter phone number" />
+                            <Form.Item
+                                name="phone_number"
+                                label="Số điện thoại"
+                                rules={[
+                                    { required: true, message: 'Vui lòng nhập số điện thoại' },
+                                    { pattern: /^[0-9]{9,11}$/, message: 'Số điện thoại không hợp lệ' },
+                                ]}
+                            >
+                                <Input prefix={<PhoneOutlined />} placeholder="Nhập số điện thoại" />
                             </Form.Item>
-                            <Form.Item name="gender" label="Giới tính" rules={[{ required: true }]}>
+                            <Form.Item
+                                name="gender"
+                                label="Giới tính"
+                                rules={[{ required: true, message: 'Vui lòng chọn giới tính' }]}
+                            >
                                 <Select>
                                     <Option value="male">Nam</Option>
                                     <Option value="female">Nữ</Option>
@@ -165,12 +187,30 @@ const ProfilePage = () => {
                             </Form.Item>
                         </div>
                         <Form.Item name="address" label="Địa chỉ">
-                            <Input prefix={<HomeOutlined />} placeholder="Enter address" />
+                            <Input prefix={<HomeOutlined />} placeholder="Nhập địa chỉ" />
                         </Form.Item>
-                        <Form.Item name="date_of_birth" label="Ngày sinh">
+                        <Form.Item
+                            name="date_of_birth"
+                            label="Ngày sinh"
+                            rules={[
+                                {
+                                    validator: (_, value) => {
+                                        if (!value) return Promise.resolve();
+                                        if (value.isAfter(dayjs())) {
+                                            return Promise.reject('Ngày sinh không được lớn hơn hôm nay');
+                                        }
+                                        return Promise.resolve();
+                                    },
+                                },
+                            ]}
+                        >
                             <DatePicker className="w-full" placeholder="Chọn ngày sinh" format="DD/MM/YYYY" />
                         </Form.Item>
-                        <Form.Item name="bio" label="Giới thiệu">
+                        <Form.Item
+                            name="bio"
+                            label="Giới thiệu"
+                            rules={[{ max: 250, message: 'Giới thiệu tối đa 250 ký tự' }]}
+                        >
                             <Input.TextArea rows={4} placeholder="Nhập phần giới thiệu" />
                         </Form.Item>
                         <Form.Item>

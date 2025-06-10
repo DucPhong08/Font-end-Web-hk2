@@ -16,7 +16,12 @@ const Login = () => {
         setLoading(true);
 
         try {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) throw new Error('Email không đúng định dạng');
+            if (password.length < 6) throw new Error('Mật khẩu phải có ít nhất 6 ký tự');
+
             await login(email, password);
+
             message.success({
                 key: 'login',
                 content: user?.role === 'admin' ? 'Chào mừng Admin!' : 'Đăng nhập thành công!',
@@ -37,6 +42,7 @@ const Login = () => {
             setLoading(false);
         }
     };
+
 
     return (
         <div className="w-full h-full flex items-center justify-center p-4 md:p-8">

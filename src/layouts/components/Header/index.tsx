@@ -351,7 +351,11 @@ function Header({ collapsed, onCollapse, user, logout, onSettingsClick }: Header
                         <div className="flex items-center">
                             <Space size="middle" className="mr-4">
                                 <Dropdown
-                                    dropdownRender={() => notificationContent}
+                                    dropdownRender={() => (
+                                        <div className="custom-dropdown md:relative fixed top-16 left-1/2 -translate-x-1/2 w-[90vw] max-w-[360px] md:top-0 md:left-auto md:translate-x-0">
+                                            {notificationContent}
+                                        </div>
+                                    )}
                                     trigger={['click']}
                                     open={isNotificationOpen}
                                     onOpenChange={setIsNotificationOpen}

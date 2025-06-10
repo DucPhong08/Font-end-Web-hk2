@@ -16,34 +16,34 @@ const Register = ({ onRegisterSuccess }: RegisterProps) => {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError(null);
-
+    const validateInput = () => {
         if (!fullName.trim() || fullName.trim().length < 2) {
-            setError('Họ và tên phải có ít nhất 2 ký tự');
-            return;
+            throw new Error('Họ và tên phải có ít nhất 2 ký tự');
         }
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-            setError('Email không hợp lệ');
-            return;
+            throw new Error('Email không hợp lệ');
         }
 
         const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{6,}$/;
         if (!passwordRegex.test(password)) {
-            setError('Mật khẩu phải có ít nhất 6 ký tự, gồm chữ cái và số');
-            return;
+            throw new Error('Mật khẩu phải có ít nhất 6 ký tự, gồm chữ cái và số');
         }
 
         if (password !== confirmPassword) {
-            setError('Mật khẩu và xác nhận mật khẩu không khớp');
-            return;
+            throw new Error('Mật khẩu và xác nhận mật khẩu không khớp');
         }
+    };
 
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError(null);
         setLoading(true);
+
         try {
+            validateInput();
+
             await registerApi(email, password, fullName);
             await login(email, password);
 
@@ -53,8 +53,9 @@ const Register = ({ onRegisterSuccess }: RegisterProps) => {
                 onRegisterSuccess();
             }, 2000);
         } catch (err: any) {
-            setError(err.message || 'Đăng ký thất bại');
-            toast.error('Đăng ký thất bại!');
+            const errMsg = err.message || 'Đăng ký thất bại';
+            setError(errMsg);
+            toast.error(errMsg);
         } finally {
             setLoading(false);
         }
@@ -128,7 +129,7 @@ const Register = ({ onRegisterSuccess }: RegisterProps) => {
                     <button
                         type="submit"
                         disabled={loading}
-                        className={`w-full py-2 rounded-md text-white font-semibold text-sm md:text-base bg-gradient-to-r from-blue-600 to-purple-600`}
+                        className="w-full py-2 rounded-md text-white font-semibold text-sm md:text-base bg-gradient-to-r from-blue-600 to-purple-600"
                     >
                         {loading ? 'Đang đăng ký...' : 'Đăng ký'}
                     </button>
