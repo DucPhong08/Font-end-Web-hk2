@@ -1,4 +1,5 @@
 import { getToken } from '../../utils/auth/authUtils';
+import { API_BASE_URL } from '@/config/config';
 
 export interface ApiResponse<T = any> {
     success: boolean;
@@ -37,8 +38,7 @@ async function apiRequest<T = any>(
             }
         }
 
-        const baseUrl = 'http://localhost:5000/api';
-        const response = await fetch(`${baseUrl}${endpoint}`, options);
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
         const data = await response.json();
 
         if (!response.ok) {
