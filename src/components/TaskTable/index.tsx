@@ -149,7 +149,6 @@ const TaskTable = ({
             title: 'Tiêu đề',
             dataIndex: 'title',
             key: 'title',
-            width: isMobile ? '30%' : '25%',
             align: 'left' as const,
             ellipsis: true,
             render: (_: any, record: TaskPayload) => {
@@ -200,9 +199,7 @@ const TaskTable = ({
             title: 'Trạng thái',
             dataIndex: 'status',
             key: 'status',
-            width: isMobile ? '15%' : '12%',
             align: 'center' as const,
-            responsive: ['sm'],
             filters: [
                 { text: 'Chưa thực hiện', value: 'todo' },
                 { text: 'Đang thực hiện', value: 'in_progress' },
@@ -243,9 +240,7 @@ const TaskTable = ({
             title: 'Độ ưu tiên',
             dataIndex: 'priority',
             key: 'priority',
-            width: isMobile ? '15%' : '12%',
             align: 'center' as const,
-            responsive: ['sm'],
             filters: [
                 { text: 'Thấp', value: 'low' },
                 { text: 'Trung bình', value: 'medium' },
@@ -288,7 +283,6 @@ const TaskTable = ({
                       title: 'Người thực hiện',
                       dataIndex: 'assigned_user_id',
                       key: 'assigned_user_id',
-                      width: isMobile ? '25%' : '20%',
                       align: 'left' as const,
                       ellipsis: true,
                       render: (_: any, record: TaskPayload) => {
@@ -380,7 +374,6 @@ const TaskTable = ({
             title: 'Thời gian bắt đầu',
             dataIndex: 'start_time',
             key: 'start_time',
-            width: isMobile ? '15%' : '13%',
             align: 'center' as const,
             responsive: ['sm'],
             sorter: (a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime(),
@@ -424,9 +417,7 @@ const TaskTable = ({
             title: 'Thời gian kết thúc',
             dataIndex: 'end_time',
             key: 'end_time',
-            width: isMobile ? '15%' : '13%',
             align: 'center' as const,
-            responsive: ['sm'],
             sorter: (a, b) => new Date(a.end_time).getTime() - new Date(b.end_time).getTime(),
             render: (_: any, record: TaskPayload) => {
                 const isEditing = editingField?.id === record.id && editingField?.field === 'end_time';
