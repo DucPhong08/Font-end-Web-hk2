@@ -7,6 +7,7 @@ import {
     CheckOutlined,
     CloseOutlined,
     BarChartOutlined,
+    UserOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { getMembersTeam, changeRoleUserTeam, inviteMember, removeMember } from '@services/teamServices';
@@ -18,6 +19,7 @@ import { useMessage } from '@hooks/useMessage';
 import { ROLES } from '@common/constant';
 import MemberStatistics from './MemberStatistics';
 import { useUser } from '@contexts/useAuth/userContext';
+import MemberProfileModal from './MemberProfileModal';
 
 const MESSAGES = {
     FETCH_ERROR: 'Có lỗi xảy ra khi tải danh sách thành viên',
@@ -49,8 +51,10 @@ const Members = ({ teamId, onMemberChange }: MembersProps) => {
     const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
     const [searchLoading, setSearchLoading] = useState(false);
     const { message, contextHolder } = useMessage();
-    const [selectedMember, setSelectedMember] = useState<{ id: number; name: string } | null>(null);
+    const [selectedMember, setSelectedMember] = useState<TeamMemberInfo | null>(null);
     const [isStatisticsVisible, setIsStatisticsVisible] = useState(false);
+    const [isProfileModalVisible, setIsProfileModalVisible] = useState(false);
+    const [selectedProfileId, setSelectedProfileId] = useState<number | null>(null);
 
     const fetchMembers = useCallback(async () => {
         if (!teamId) return;
@@ -170,12 +174,22 @@ const Members = ({ teamId, onMemberChange }: MembersProps) => {
     const isEditing = useCallback((record: TeamMemberInfo) => record.id === editingKey, [editingKey]);
 
     const handleViewStatistics = useCallback((member: TeamMemberInfo) => {
-        setSelectedMember({ id: member.id, name: member.full_name });
+        setSelectedMember(member);
         setIsStatisticsVisible(true);
     }, []);
 
     const handleCloseStatistics = useCallback(() => {
         setIsStatisticsVisible(false);
+        setSelectedMember(null);
+    }, []);
+
+    const handleViewProfile = useCallback((member: TeamMemberInfo) => {
+        setSelectedMember(member);
+        setIsProfileModalVisible(true);
+    }, []);
+
+    const handleCloseProfileModal = useCallback(() => {
+        setIsProfileModalVisible(false);
         setSelectedMember(null);
     }, []);
 
@@ -188,8 +202,19 @@ const Members = ({ teamId, onMemberChange }: MembersProps) => {
             key: 'full_name',
             render: (text: string, record: TeamMemberInfo) => (
                 <Space>
-                    <Avatar src={record.avatar_url}>{record.full_name?.[0]?.toUpperCase() || '?'}</Avatar>
-                    <span className="font-medium">{text}</span>
+                    <Avatar
+                        src={record.avatar_url}
+                        className="cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => handleViewProfile(record)}
+                    >
+                        {record.full_name?.[0]?.toUpperCase() || '?'}
+                    </Avatar>
+                    <span
+                        className="font-medium cursor-pointer hover:text-blue-500 transition-colors"
+                        onClick={() => handleViewProfile(record)}
+                    >
+                        {text}
+                    </span>
                 </Space>
             ),
         },
@@ -254,66 +279,61 @@ const Members = ({ teamId, onMemberChange }: MembersProps) => {
                 </Space>
             ),
         },
-
-        ...(currentUserRole && currentUserRole !== ROLES.MEMBER
-            ? [
-                  {
-                      title: 'Thao tác',
-                      key: 'action',
-                      render: (_: any, record: TeamMemberInfo) => {
-                          const editable = isEditing(record);
-                          return editable ? (
-                              <Space>
-                                  <Button
-                                      type="text"
-                                      icon={<CheckOutlined />}
-                                      onClick={() => handleSaveRole(record.id)}
-                                      className="text-green-500"
-                                      aria-label="Lưu vai trò"
-                                  />
-                                  <Button
-                                      type="text"
-                                      icon={<CloseOutlined />}
-                                      onClick={handleCancelEdit}
-                                      className="text-red-500"
-                                      aria-label="Hủy chỉnh sửa"
-                                  />
-                              </Space>
-                          ) : (
-                              <Space>
-                                  <Button
-                                      type="text"
-                                      icon={<BarChartOutlined />}
-                                      onClick={() => handleViewStatistics(record)}
-                                      aria-label={`Xem thống kê của ${record.full_name}`}
-                                  >
-                                      <span className="hidden lg:inline">Thống kê</span>
-                                  </Button>
-                                  {record.role !== ROLES.CREATOR && (
-                                      <Popconfirm
-                                          title="Xác nhận xóa"
-                                          description={MESSAGES.DELETE_CONFIRM(record.full_name)}
-                                          onConfirm={() => handleDeleteMember(record)}
-                                          okText="Xóa"
-                                          cancelText="Hủy"
-                                          okButtonProps={{ danger: true }}
-                                      >
-                                          <Button
-                                              type="text"
-                                              danger
-                                              icon={<UserDeleteOutlined />}
-                                              aria-label={`Xóa thành viên ${record.full_name}`}
-                                          >
-                                              <span className="hidden lg:inline">Xóa</span>
-                                          </Button>
-                                      </Popconfirm>
-                                  )}
-                              </Space>
-                          );
-                      },
-                  },
-              ]
-            : []),
+        {
+            title: 'Thao tác',
+            key: 'action',
+            render: (_: any, record: TeamMemberInfo) => {
+                const editable = isEditing(record);
+                return editable ? (
+                    <Space>
+                        <Button
+                            type="text"
+                            icon={<CheckOutlined />}
+                            onClick={() => handleSaveRole(record.id)}
+                            className="text-green-500"
+                            aria-label="Lưu vai trò"
+                        />
+                        <Button
+                            type="text"
+                            icon={<CloseOutlined />}
+                            onClick={handleCancelEdit}
+                            className="text-red-500"
+                            aria-label="Hủy chỉnh sửa"
+                        />
+                    </Space>
+                ) : (
+                    <Space>
+                        <Button
+                            type="text"
+                            icon={<BarChartOutlined />}
+                            onClick={() => handleViewStatistics(record)}
+                            aria-label={`Xem thống kê của ${record.full_name}`}
+                        >
+                            <span className="hidden lg:inline">Thống kê</span>
+                        </Button>
+                        {record.role !== ROLES.CREATOR && currentUserRole && currentUserRole !== ROLES.MEMBER && (
+                            <Popconfirm
+                                title="Xác nhận xóa"
+                                description={MESSAGES.DELETE_CONFIRM(record.full_name)}
+                                onConfirm={() => handleDeleteMember(record)}
+                                okText="Xóa"
+                                cancelText="Hủy"
+                                okButtonProps={{ danger: true }}
+                            >
+                                <Button
+                                    type="text"
+                                    danger
+                                    icon={<UserDeleteOutlined />}
+                                    aria-label={`Xóa thành viên ${record.full_name}`}
+                                >
+                                    <span className="hidden lg:inline">Xóa</span>
+                                </Button>
+                            </Popconfirm>
+                        )}
+                    </Space>
+                );
+            },
+        },
     ];
 
     useEffect(() => {
@@ -388,7 +408,7 @@ const Members = ({ teamId, onMemberChange }: MembersProps) => {
             </Modal>
 
             <Drawer
-                title={`Thống kê thành viên: ${selectedMember?.name}`}
+                title={`Thống kê thành viên: ${selectedMember?.full_name}`}
                 placement="right"
                 onClose={handleCloseStatistics}
                 open={isStatisticsVisible}
@@ -402,6 +422,12 @@ const Members = ({ teamId, onMemberChange }: MembersProps) => {
                     />
                 )}
             </Drawer>
+
+            <MemberProfileModal
+                isOpen={isProfileModalVisible}
+                onClose={handleCloseProfileModal}
+                member={selectedMember}
+            />
         </div>
     );
 };
