@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { Card, Button, Modal, List, Spin, Tag, ConfigProvider, Calendar, Avatar, Tooltip, Tabs } from 'antd';
+import { Card, Button, Modal, List, Spin, Tag, ConfigProvider, Calendar, Avatar, Tooltip, Tabs, message } from 'antd';
 import type { CalendarProps } from 'antd';
 import type { Dayjs } from 'dayjs';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -31,6 +31,7 @@ const CalendarComponent = ({ tasks, loading = false, onTaskCreated }: CalendarCo
                 setReminders(data.data || []);
             } catch (err) {
                 console.error(err);
+                toast.error('Không thể tải danh sách nhắc nhở');
             }
         };
         fetchReminders();
@@ -53,25 +54,74 @@ const CalendarComponent = ({ tasks, loading = false, onTaskCreated }: CalendarCo
         setIsViewModalOpen(true);
     }, []);
 
+    const validateTaskData = (taskData: TaskPayload) => {
+        const trimmedTitle = taskData.title?.trim();
+        const trimmedDescription = taskData.description?.trim();
+
+        if (!trimmedTitle) {
+            throw new Error('Tiêu đề công việc không được để trống');
+        }
+
+        if (trimmedTitle.length < 3) {
+            throw new Error('Tiêu đề công việc phải có ít nhất 3 ký tự');
+        }
+
+        if (trimmedTitle.length > 100) {
+            throw new Error('Tiêu đề công việc không được vượt quá 100 ký tự');
+        }
+
+        if (trimmedDescription && trimmedDescription.length > 500) {
+            throw new Error('Mô tả công việc không được vượt quá 500 ký tự');
+        }
+
+        if (!taskData.start_time || !taskData.end_time) {
+            throw new Error('Vui lòng chọn thời gian bắt đầu và kết thúc');
+        }
+
+        const startTime = dayjs(taskData.start_time);
+        const endTime = dayjs(taskData.end_time);
+
+        if (endTime.isBefore(startTime)) {
+            throw new Error('Thời gian kết thúc phải sau thời gian bắt đầu');
+        }
+
+        return {
+            ...taskData,
+            title: trimmedTitle,
+            description: trimmedDescription || '',
+        };
+    };
+
     const handleTaskSubmit = useCallback(
         (taskData: TaskPayload) => {
-            if (selectedTask) {
-                const updatedTask = {
-                    ...selectedTask,
-                    ...taskData,
-                };
-                onTaskCreated?.(updatedTask);
-            } else {
-                onTaskCreated?.(taskData);
+            try {
+                const validatedData = validateTaskData(taskData);
+
+                if (selectedTask) {
+                    const updatedTask = {
+                        ...selectedTask,
+                        ...validatedData,
+                    };
+                    onTaskCreated?.(updatedTask);
+                    toast.success('Cập nhật công việc thành công');
+                } else {
+                    onTaskCreated?.(validatedData);
+                    toast.success('Tạo công việc mới thành công');
+                }
+                setIsModalOpen(false);
+                setSelectedTask(null);
+            } catch (error: any) {
+                toast.error(error.message || 'Có lỗi xảy ra khi lưu công việc');
             }
-            setIsModalOpen(false);
-            setSelectedTask(null);
         },
         [onTaskCreated, selectedTask],
     );
 
     const handleEditTask = (task: TaskPayload) => {
-        if (!task.id) return toast.error('Không tìm thấy ID công việc');
+        if (!task.id) {
+            toast.error('Không tìm thấy ID công việc');
+            return;
+        }
         setSelectedTask(task);
         setIsModalOpen(true);
         setIsViewModalOpen(false);
@@ -191,10 +241,13 @@ const CalendarComponent = ({ tasks, loading = false, onTaskCreated }: CalendarCo
 
                 <Modal
                     open={isModalOpen}
-                    onCancel={() => setIsModalOpen(false)}
+                    onCancel={() => {
+                        setIsModalOpen(false);
+                        setSelectedTask(null);
+                    }}
                     footer={null}
                     title={selectedTask ? 'Chỉnh sửa công việc' : 'Thêm công việc mới'}
-                    style={{ maxWidth: 600 }}
+                    destroyOnClose
                 >
                     <TaskForm
                         key={selectedTask?.id || 'new'}
@@ -211,7 +264,10 @@ const CalendarComponent = ({ tasks, loading = false, onTaskCreated }: CalendarCo
                                 : undefined
                         }
                         onTaskCreated={handleTaskSubmit}
-                        onClose={() => setIsModalOpen(false)}
+                        onClose={() => {
+                            setIsModalOpen(false);
+                            setSelectedTask(null);
+                        }}
                     />
                 </Modal>
 
@@ -238,7 +294,7 @@ const CalendarComponent = ({ tasks, loading = false, onTaskCreated }: CalendarCo
                                         <List.Item
                                             key={task.id}
                                             onClick={() => handleEditTask(task)}
-                                            className="hover:bg-gray-50 transition-colors duration-200"
+                                            className="hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
                                         >
                                             <List.Item.Meta
                                                 avatar={

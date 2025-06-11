@@ -3,6 +3,8 @@ import { Button, Upload, List, Typography, Input } from 'antd';
 import { UploadOutlined, PaperClipOutlined, DeleteOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { TaskNotesAndAttachments } from '@services/types/types';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -109,17 +111,20 @@ const NotesAndAttachments = ({
             <div>
                 <h3 className="text-lg font-semibold mb-4 text-gray-800">Thêm ghi chú và tệp đính kèm</h3>
                 <div className="space-y-4">
-                    <div className="flex flex-col gap-4">
-                        <TextArea
-                            value={newNote}
-                            onChange={(e) => onNoteChange(e.target.value)}
-                            placeholder="Nhập ghi chú..."
-                            rows={3}
-                            className="w-full"
-                            maxLength={500}
-                            showCount
-                        />
-                        <div className="flex items-center gap-4">
+                    <div className="flex flex-col">
+                        <div className="w-full">
+                            <ReactQuill
+                                value={newNote}
+                                onChange={onNoteChange}
+                                theme="snow"
+                                className="bg-white border border-gray-300 rounded-md"
+                                style={{ minHeight: '120px', maxHeight: '200px', overflowY: 'auto' }}
+                            />
+                            <div className="text-right text-sm text-gray-500 mt-1">
+                                {newNote.replace(/<[^>]+>/g, '').length}/500 ký tự
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-4 mb-2">
                             <Upload
                                 customRequest={({ onSuccess }) => setTimeout(() => onSuccess?.('ok'), 0)}
                                 onChange={onFileChange}

@@ -37,7 +37,7 @@ const ProfilePage = () => {
                     });
                 }
             } catch (error) {
-                message.error({ key: 'fetch-profile-error', content: 'Failed to fetch profile' });
+                message.error({ key: 'fetch-profile-error', content: 'Không thể tải thông tin cá nhân' });
             }
         };
         fetchProfile();
@@ -51,25 +51,59 @@ const ProfilePage = () => {
         }
     }, []);
 
+    const validateFormData = (values: Partial<UpdateUserProfile>) => {
+        const trimmedValues = {
+            full_name: values.full_name?.trim(),
+            phone_number: values.phone_number?.trim(),
+            address: values.address?.trim(),
+            bio: values.bio?.trim(),
+        };
+
+        if (!trimmedValues.full_name) {
+            throw new Error('Họ tên không được để trống');
+        }
+
+        if (trimmedValues.full_name.length < 2) {
+            throw new Error('Họ tên phải có ít nhất 2 ký tự');
+        }
+
+        if (trimmedValues.full_name.length > 50) {
+            throw new Error('Họ tên không được vượt quá 50 ký tự');
+        }
+
+        if (trimmedValues.phone_number && !/^[0-9]{9,11}$/.test(trimmedValues.phone_number)) {
+            throw new Error('Số điện thoại không hợp lệ');
+        }
+
+        if (trimmedValues.address && trimmedValues.address.length > 200) {
+            throw new Error('Địa chỉ không được vượt quá 200 ký tự');
+        }
+
+        if (trimmedValues.bio && trimmedValues.bio.length > 250) {
+            throw new Error('Giới thiệu không được vượt quá 250 ký tự');
+        }
+
+        return trimmedValues;
+    };
+
     const handleProfileUpdate = useCallback(
         async (values: Partial<UpdateUserProfile>) => {
             if (!user?.id) {
-                message.error({ key: 'update-error', content: 'User not found' });
+                message.error({ key: 'update-error', content: 'Không tìm thấy thông tin người dùng' });
                 return;
             }
 
             const loadingKey = 'update-profile-loading';
             setLoading(true);
-            message.loading({ key: loadingKey, content: 'Updating profile...' });
+            message.loading({ key: loadingKey, content: 'Đang cập nhật thông tin...' });
 
             try {
+                const validatedData = validateFormData(values);
                 const payload: Partial<UpdateUserProfile> = {
-                    full_name: values.full_name?.trim(),
-                    phone_number: values.phone_number?.trim(),
+                    ...validatedData,
                     gender: values.gender,
-                    address: values.address?.trim(),
-                    bio: values.bio?.trim(),
                 };
+
                 if (values.date_of_birth) {
                     const date = values.date_of_birth as any;
                     payload.date_of_birth = date?.format?.('YYYY-MM-DD') || null;
@@ -98,10 +132,10 @@ const ProfilePage = () => {
 
                 await fetchUserInfo();
 
-                message.success({ key: loadingKey, content: 'Profile updated successfully!' });
-            } catch (error) {
+                message.success({ key: loadingKey, content: 'Cập nhật thông tin thành công!' });
+            } catch (error: any) {
                 console.error('Update error:', error);
-                message.error({ key: loadingKey, content: 'Failed to update profile' });
+                message.error({ key: loadingKey, content: error.message || 'Cập nhật thông tin thất bại' });
             } finally {
                 setLoading(false);
             }
@@ -135,7 +169,7 @@ const ProfilePage = () => {
                         </div>
 
                         <Title level={4} className="mt-3 text-gray-800 font-semibold">
-                            {user?.full_name || 'No name provided'}
+                            {user?.full_name || 'Chưa có tên'}
                         </Title>
                         <Text
                             className="text-xs italic text-gray-500 hover:text-blue-600 cursor-pointer"
@@ -155,9 +189,19 @@ const ProfilePage = () => {
                                 rules={[
                                     { required: true, message: 'Vui lòng nhập họ tên' },
                                     { min: 2, message: 'Họ tên tối thiểu 2 ký tự' },
+                                    { max: 50, message: 'Họ tên không được vượt quá 50 ký tự' },
                                 ]}
                             >
-                                <Input prefix={<UserOutlined />} placeholder="Nhập họ tên" />
+                                <Input
+                                    prefix={<UserOutlined />}
+                                    placeholder="Nhập họ tên"
+                                    maxLength={50}
+                                    onKeyDown={(e) => {
+                                        if (e.key === ' ' && !e.currentTarget.value) {
+                                            e.preventDefault();
+                                        }
+                                    }}
+                                />
                             </Form.Item>
                             <Form.Item
                                 name="email"
@@ -176,7 +220,16 @@ const ProfilePage = () => {
                                     { pattern: /^[0-9]{9,11}$/, message: 'Số điện thoại không hợp lệ' },
                                 ]}
                             >
-                                <Input prefix={<PhoneOutlined />} placeholder="Nhập số điện thoại" />
+                                <Input
+                                    prefix={<PhoneOutlined />}
+                                    placeholder="Nhập số điện thoại"
+                                    maxLength={11}
+                                    onKeyDown={(e) => {
+                                        if (e.key === ' ' && !e.currentTarget.value) {
+                                            e.preventDefault();
+                                        }
+                                    }}
+                                />
                             </Form.Item>
                             <Form.Item
                                 name="gender"
@@ -190,8 +243,21 @@ const ProfilePage = () => {
                                 </Select>
                             </Form.Item>
                         </div>
-                        <Form.Item name="address" label="Địa chỉ">
-                            <Input prefix={<HomeOutlined />} placeholder="Nhập địa chỉ" />
+                        <Form.Item
+                            name="address"
+                            label="Địa chỉ"
+                            rules={[{ max: 200, message: 'Địa chỉ không được vượt quá 200 ký tự' }]}
+                        >
+                            <Input
+                                prefix={<HomeOutlined />}
+                                placeholder="Nhập địa chỉ"
+                                maxLength={200}
+                                onKeyDown={(e) => {
+                                    if (e.key === ' ' && !e.currentTarget.value) {
+                                        e.preventDefault();
+                                    }
+                                }}
+                            />
                         </Form.Item>
                         <Form.Item
                             name="date_of_birth"
@@ -215,7 +281,17 @@ const ProfilePage = () => {
                             label="Giới thiệu"
                             rules={[{ max: 250, message: 'Giới thiệu tối đa 250 ký tự' }]}
                         >
-                            <Input.TextArea rows={4} placeholder="Nhập phần giới thiệu" />
+                            <Input.TextArea
+                                rows={4}
+                                placeholder="Nhập phần giới thiệu"
+                                maxLength={250}
+                                showCount
+                                onKeyDown={(e) => {
+                                    if (e.key === ' ' && !e.currentTarget.value) {
+                                        e.preventDefault();
+                                    }
+                                }}
+                            />
                         </Form.Item>
                         <Form.Item>
                             <Button type="primary" htmlType="submit" loading={loading} className="w-full">

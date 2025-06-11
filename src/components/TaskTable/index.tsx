@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Input, Space, Tag, Button, Drawer, Select, DatePicker, Form, Popconfirm, Table } from 'antd';
+import { Input, Space, Tag, Button, Drawer, Select, DatePicker, Form, Popconfirm, Table, Tooltip } from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import { TaskPayload, UserProfile } from '@services/types/types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -19,6 +19,7 @@ import { TaskTableContentProps } from './types';
 import TaskDetails from '../TaskDetail/TaskDetails';
 import FilterModal from './FilterModal';
 import { SearchOutlined, FilterOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons';
+import TaskTableContent from './TaskTableContent';
 
 dayjs.extend(utc);
 
@@ -60,6 +61,12 @@ const TaskTable = ({
         setLocalTasks(tasks);
     }, [tasks]);
 
+    useEffect(() => {
+        if (onFilter) {
+            onFilter({ ...filters, searchTitle: debouncedSearchTitle });
+        }
+    }, [debouncedSearchTitle, filters]);
+
     const handleFieldSave = async (record: TaskPayload, field: string) => {
         try {
             const value = await form.validateFields([field]);
@@ -67,14 +74,37 @@ const TaskTable = ({
 
             if (field.includes('time')) {
                 const date = dayjs(value[field]);
-                if (!date.isValid()) return;
-                newValue = date.format('YYYY-MM-DD HH:mm:ss');
+                if (!date.isValid()) {
+                    return;
+                }
+                try {
+                    newValue = date.format('YYYY-MM-DD HH:mm:ss');
+                } catch (error) {
+                    console.error('Error formatting date:', error);
+                    return;
+                }
             } else {
                 newValue = value[field];
+                if (typeof newValue === 'string') {
+                    // Chỉ kiểm tra khi input rỗng hoặc chỉ chứa khoảng trắng
+                    if (!newValue.trim()) {
+                        form.setFields([
+                            {
+                                name: field,
+                                errors: ['Giá trị không được để trống'],
+                            },
+                        ]);
+                        return;
+                    }
+                    newValue = newValue.trim();
+                }
             }
 
             if (newValue !== record[field as keyof TaskPayload]) {
-                const updatedTask = { ...record, [field]: newValue } as TaskPayload;
+                const updatedTask = {
+                    ...record,
+                    [field]: newValue,
+                } as TaskPayload;
                 await onEditTask(updatedTask);
             }
             setEditingField(null);
@@ -85,11 +115,18 @@ const TaskTable = ({
     };
 
     const handleDateChange = (record: TaskPayload, field: string, date: dayjs.Dayjs | null) => {
-        if (date && date.isValid()) {
-            const formattedDate = date.format('YYYY-MM-DD HH:mm:ss');
-            if (formattedDate !== record[field as keyof TaskPayload]) {
-                const updatedTask = { ...record, [field]: formattedDate } as TaskPayload;
-                onEditTask(updatedTask);
+        if (date) {
+            try {
+                const formattedDate = date.format('YYYY-MM-DD HH:mm:ss');
+                if (formattedDate !== record[field as keyof TaskPayload]) {
+                    const updatedTask = {
+                        ...record,
+                        [field]: formattedDate,
+                    } as TaskPayload;
+                    onEditTask(updatedTask);
+                }
+            } catch (error) {
+                console.error('Error formatting date:', error);
             }
         }
         setEditingField(null);
@@ -99,7 +136,6 @@ const TaskTable = ({
     const handleDeleteTask = async (taskId: string | number) => {
         try {
             await onDeleteTask(taskId);
-            if (onReload) onReload();
         } catch (error) {
             console.error('Error deleting task:', error);
         }
@@ -109,7 +145,7 @@ const TaskTable = ({
         setEditingField({ id: record.id!, field });
         const value = record[field as keyof TaskPayload];
         form.setFieldsValue({
-            [field]: field.includes('time') && value ? dayjs(value) : value,
+            [field]: field.includes('time') ? dayjs(value) : value,
         });
     };
 
@@ -119,13 +155,29 @@ const TaskTable = ({
     };
 
     const handleFilter = (values: any) => {
-        setFilters(values);
+        // Kiểm tra và xử lý các giá trị filter
+        const processedValues = { ...values };
+
+        // Xử lý các trường string
+        Object.keys(processedValues).forEach((key) => {
+            if (typeof processedValues[key] === 'string') {
+                // Chỉ kiểm tra khi input rỗng hoặc chỉ chứa khoảng trắng
+                if (!processedValues[key].trim()) {
+                    delete processedValues[key];
+                    return;
+                }
+                processedValues[key] = processedValues[key].trim();
+            }
+        });
+
+        setFilters(processedValues);
         onPageChange(1);
     };
 
     const handleSearch = (value: string) => {
-        if (onFilter) {
-            onFilter({ ...filters, searchTitle: value, page: 1 });
+        // Chỉ kiểm tra khi input rỗng hoặc chỉ chứa khoảng trắng
+        if (!value.trim()) {
+            return;
         }
         setSearchTitle(value);
     };
@@ -134,9 +186,7 @@ const TaskTable = ({
         setSearchTitle('');
         setFilters({});
         form.resetFields();
-        if (onFilter) {
-            onFilter({ searchTitle: '', ...{}, page: 1 });
-        }
+        onPageChange(1);
     };
 
     const handleViewDetail = (task: TaskPayload) => {
@@ -149,8 +199,8 @@ const TaskTable = ({
             title: 'Tiêu đề',
             dataIndex: 'title',
             key: 'title',
-            width: isMobile ? '30%' : '25%',
-            align: 'left' as const,
+            width: '25%',
+            align: 'center' as const,
             ellipsis: true,
             render: (_: any, record: TaskPayload) => {
                 const isEditing = editingField?.id === record.id && editingField?.field === 'title';
@@ -161,7 +211,7 @@ const TaskTable = ({
                         rules={[{ required: true, message: 'Vui lòng nhập tiêu đề!' }]}
                     >
                         <Input
-                            className="rounded-lg border-gray-300 hover:border-indigo-500 focus:border-indigo-500 transition-all duration-300 shadow-sm text-base sm:text-lg"
+                            className="animate-fade-in hover:border-blue-400 focus:border-blue-400 transition-all duration-200"
                             onPressEnter={() => handleFieldSave(record, 'title')}
                             defaultValue={record.title}
                             autoFocus
@@ -169,17 +219,15 @@ const TaskTable = ({
                                 <Space size="small">
                                     <Button
                                         type="text"
-                                        icon={<FontAwesomeIcon icon={faSave} className="text-green-600" />}
+                                        icon={<FontAwesomeIcon icon={faSave} className="text-green-500" />}
                                         onClick={() => handleFieldSave(record, 'title')}
-                                        className="!p-0 !h-6 hover:scale-110 transition-transform duration-200"
-                                        aria-label="Lưu tiêu đề"
+                                        className="!p-0 !h-6"
                                     />
                                     <Button
                                         type="text"
-                                        icon={<FontAwesomeIcon icon={faTimes} className="text-red-600" />}
-                                        onClick={handleFieldCancel}
-                                        className="!p-0 !h-6 hover:scale-110 transition-transform duration-200"
-                                        aria-label="Hủy chỉnh sửa"
+                                        icon={<FontAwesomeIcon icon={faTimes} className="text-red-500" />}
+                                        onClick={() => handleFieldCancel()}
+                                        className="!p-0 !h-6"
                                     />
                                 </Space>
                             }
@@ -187,9 +235,8 @@ const TaskTable = ({
                     </Form.Item>
                 ) : (
                     <span
-                        className="font-semibold text-gray-800 hover:text-indigo-600 transition-colors duration-200 cursor-pointer truncate block max-w-[150px] sm:max-w-[250px] text-base sm:text-lg"
+                        className="font-medium hover:text-blue-500 transition-all duration-200 cursor-pointer truncate block max-w-[120px] sm:max-w-[200px]"
                         onClick={() => handleFieldEdit(record, 'title')}
-                        title={record.title}
                     >
                         {record.title}
                     </span>
@@ -200,8 +247,9 @@ const TaskTable = ({
             title: 'Trạng thái',
             dataIndex: 'status',
             key: 'status',
-            width: isMobile ? '15%' : '12%',
+            width: '12%',
             align: 'center' as const,
+            className: '!w-[100px] sm:!w-[120px]',
             responsive: ['sm'],
             filters: [
                 { text: 'Chưa thực hiện', value: 'todo' },
@@ -218,10 +266,9 @@ const TaskTable = ({
                         rules={[{ required: true, message: 'Vui lòng chọn trạng thái!' }]}
                     >
                         <Select
-                            className="rounded-lg border-gray-300 hover:border-indigo-500 focus:border-indigo-500 transition-all duration-300 shadow-sm"
+                            className="hover:border-blue-400 focus:border-blue-400 transition-all duration-200"
                             onBlur={() => handleFieldSave(record, 'status')}
                             autoFocus
-                            popupClassName="rounded-lg shadow-lg"
                         >
                             <Select.Option value="todo">Chưa thực hiện</Select.Option>
                             <Select.Option value="in_progress">Đang thực hiện</Select.Option>
@@ -231,7 +278,7 @@ const TaskTable = ({
                 ) : (
                     <Tag
                         color={getStatusColor(record.status)}
-                        className="px-3 py-1 text-sm font-medium rounded-full hover:opacity-90 transition-opacity duration-200 cursor-pointer shadow-sm"
+                        className="px-2 py-1 text-xs sm:text-sm hover:opacity-80 transition-opacity duration-200 cursor-pointer"
                         onClick={() => handleFieldEdit(record, 'status')}
                     >
                         {getStatusText(record.status)}
@@ -243,7 +290,7 @@ const TaskTable = ({
             title: 'Độ ưu tiên',
             dataIndex: 'priority',
             key: 'priority',
-            width: isMobile ? '15%' : '12%',
+            width: '12%',
             align: 'center' as const,
             responsive: ['sm'],
             filters: [
@@ -261,10 +308,9 @@ const TaskTable = ({
                         rules={[{ required: true, message: 'Vui lòng chọn độ ưu tiên!' }]}
                     >
                         <Select
-                            className="rounded-lg border-gray-300 hover:border-indigo-500 focus:border-indigo-500 transition-all duration-300 shadow-sm"
+                            className="hover:border-blue-400 focus:border-blue-400 transition-all duration-200"
                             onBlur={() => handleFieldSave(record, 'priority')}
                             autoFocus
-                            popupClassName="rounded-lg shadow-lg"
                         >
                             <Select.Option value="low">Thấp</Select.Option>
                             <Select.Option value="medium">Trung bình</Select.Option>
@@ -274,7 +320,7 @@ const TaskTable = ({
                 ) : (
                     <Tag
                         color={getPriorityColor(record.priority)}
-                        className="px-3 py-1 text-sm font-medium rounded-full hover:opacity-90 transition-opacity duration-200 cursor-pointer shadow-sm"
+                        className="px-2 py-1 text-xs sm:text-sm hover:opacity-80 transition-opacity duration-200 cursor-pointer"
                         onClick={() => handleFieldEdit(record, 'priority')}
                     >
                         {getPriorityText(record.priority)}
@@ -288,8 +334,8 @@ const TaskTable = ({
                       title: 'Người thực hiện',
                       dataIndex: 'assigned_user_id',
                       key: 'assigned_user_id',
-                      width: isMobile ? '25%' : '20%',
-                      align: 'left' as const,
+                      width: '20%',
+                      align: 'center' as const,
                       ellipsis: true,
                       render: (_: any, record: TaskPayload) => {
                           const isEditing =
@@ -311,7 +357,10 @@ const TaskTable = ({
                                           if (record.id && onAssignTask) {
                                               try {
                                                   await onAssignTask(Number(record.id), value);
-                                                  const updatedTask = { ...record, assigned_user_id: value };
+                                                  const updatedTask = {
+                                                      ...record,
+                                                      assigned_user_id: value,
+                                                  };
                                                   await onEditTask(updatedTask);
                                                   setEditingField(null);
                                               } catch (error) {
@@ -322,9 +371,8 @@ const TaskTable = ({
                                       filterOption={(input, option) =>
                                           (option?.label as string).toLowerCase().includes(input.toLowerCase())
                                       }
-                                      className="rounded-lg border-gray-300 hover:border-indigo-500 focus:border-indigo-500 transition-all duration-300 shadow-sm"
+                                      className="w-full hover:border-blue-400 focus:border-blue-400 transition-all duration-200"
                                       autoFocus
-                                      popupClassName="rounded-lg shadow-lg"
                                   >
                                       {teamMembers.map((user: UserProfile) => (
                                           <Select.Option
@@ -333,11 +381,8 @@ const TaskTable = ({
                                               label={`${user.full_name} (${getRoleText(user.role)})`}
                                           >
                                               <div className="flex items-center justify-between">
-                                                  <span className="font-medium text-gray-800">{user.full_name}</span>
-                                                  <Tag
-                                                      color={getRoleColor(user.role)}
-                                                      className="ml-2 rounded-full text-xs shadow-sm"
-                                                  >
+                                                  <span className="font-medium">{user.full_name}</span>
+                                                  <Tag color={getRoleColor(user.role)} className="ml-2">
                                                       {getRoleText(user.role)}
                                                   </Tag>
                                               </div>
@@ -347,28 +392,20 @@ const TaskTable = ({
                               </Form.Item>
                           ) : (
                               <span
-                                  className="text-gray-700 hover:text-indigo-600 transition-colors duration-200 cursor-pointer flex items-center text-base sm:text-lg"
+                                  className="text-gray-600 hover:text-blue-500 transition-colors duration-200 cursor-pointer"
                                   onClick={() => handleFieldEdit(record, 'assigned_user_id')}
-                                  title={
-                                      assignedUser
-                                          ? `${assignedUser.full_name} (${getRoleText(assignedUser.role)})`
-                                          : 'Chưa giao'
-                                  }
                               >
                                   {assignedUser ? (
                                       <div className="flex items-center">
-                                          <span className="truncate max-w-[100px] sm:max-w-[150px] font-medium">
+                                          <span className="truncate max-w-[80px] sm:max-w-[120px]">
                                               {assignedUser.full_name}
                                           </span>
-                                          <Tag
-                                              color={getRoleColor(assignedUser.role)}
-                                              className="ml-2 rounded-full text-xs shadow-sm"
-                                          >
+                                          <Tag color={getRoleColor(assignedUser.role)} className="ml-2 flex-shrink-0">
                                               {getRoleText(assignedUser.role)}
                                           </Tag>
                                       </div>
                                   ) : (
-                                      <span className="text-gray-400">Chưa giao</span>
+                                      'Chưa giao'
                                   )}
                               </span>
                           );
@@ -380,40 +417,43 @@ const TaskTable = ({
             title: 'Thời gian bắt đầu',
             dataIndex: 'start_time',
             key: 'start_time',
-            width: isMobile ? '15%' : '13%',
+            width: '15%',
             align: 'center' as const,
-            responsive: ['sm'],
             sorter: (a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime(),
             render: (_: any, record: TaskPayload) => {
                 const isEditing = editingField?.id === record.id && editingField?.field === 'start_time';
                 let date;
                 try {
                     const timeStr = record.start_time;
-                    date = dayjs(timeStr);
-                    if (!date.isValid()) date = dayjs();
+                    if (timeStr.includes('T')) {
+                        date = dayjs(timeStr);
+                    } else {
+                        date = dayjs(timeStr);
+                    }
+                    if (!date.isValid()) {
+                        date = dayjs();
+                    }
                 } catch (error) {
                     date = dayjs();
                 }
                 const currentYear = dayjs().year();
-                const format = date.year() === currentYear ? 'DD/MM HH:mm' : 'DD/MM/YYYY HH:mm';
+                const format = date.year() === currentYear ? 'DD/MM' : 'DD/MM/YYYY';
 
                 return isEditing ? (
                     <Form.Item name="start_time" style={{ margin: 0 }}>
                         <DatePicker
                             showTime
-                            format="DD/MM/YYYY HH:mm"
+                            format="YYYY-MM-DD HH:mm"
                             defaultValue={date}
-                            className="rounded-lg border-gray-300 hover:border-indigo-500 focus:border-indigo-500 transition-all duration-300 shadow-sm"
+                            className="w-full hover:border-blue-400 focus:border-blue-400 transition-all duration-200"
                             onOk={(date) => handleDateChange(record, 'start_time', date)}
                             autoFocus
-                            popupClassName="rounded-lg shadow-lg"
                         />
                     </Form.Item>
                 ) : (
                     <span
-                        className="text-gray-700 hover:text-indigo-600 transition-colors duration-200 cursor-pointer text-sm sm:text-base"
+                        className="text-gray-600 hover:text-blue-500 transition-colors duration-200 cursor-pointer text-xs sm:text-sm"
                         onClick={() => handleFieldEdit(record, 'start_time')}
-                        title={date.format('DD/MM/YYYY HH:mm')}
                     >
                         {date.format(format)}
                     </span>
@@ -424,40 +464,44 @@ const TaskTable = ({
             title: 'Thời gian kết thúc',
             dataIndex: 'end_time',
             key: 'end_time',
-            width: isMobile ? '15%' : '13%',
+            width: '15%',
             align: 'center' as const,
-            responsive: ['sm'],
+            ellipsis: true,
             sorter: (a, b) => new Date(a.end_time).getTime() - new Date(b.end_time).getTime(),
             render: (_: any, record: TaskPayload) => {
                 const isEditing = editingField?.id === record.id && editingField?.field === 'end_time';
                 let date;
                 try {
                     const timeStr = record.end_time;
-                    date = dayjs(timeStr);
-                    if (!date.isValid()) date = dayjs();
+                    if (timeStr.includes('T')) {
+                        date = dayjs(timeStr);
+                    } else {
+                        date = dayjs(timeStr);
+                    }
+                    if (!date.isValid()) {
+                        date = dayjs();
+                    }
                 } catch (error) {
                     date = dayjs();
                 }
                 const currentYear = dayjs().year();
-                const format = date.year() === currentYear ? 'DD/MM HH:mm' : 'DD/MM/YYYY HH:mm';
+                const format = date.year() === currentYear ? 'DD/MM' : 'DD/MM/YYYY';
 
                 return isEditing ? (
                     <Form.Item name="end_time" style={{ margin: 0 }}>
                         <DatePicker
                             showTime
-                            format="DD/MM/YYYY HH:mm"
+                            format="YYYY-MM-DD HH:mm"
                             defaultValue={date}
-                            className="rounded-lg border-gray-300 hover:border-indigo-500 focus:border-indigo-500 transition-all duration-300 shadow-sm"
+                            className="w-full hover:border-blue-400 focus:border-blue-400 transition-all duration-200"
                             onOk={(date) => handleDateChange(record, 'end_time', date)}
                             autoFocus
-                            popupClassName="rounded-lg shadow-lg"
                         />
                     </Form.Item>
                 ) : (
                     <span
-                        className="text-gray-700 hover:text-indigo-600 transition-colors duration-200 cursor-pointer text-sm sm:text-base"
+                        className="text-gray-600 hover:text-blue-500 transition-colors duration-200 cursor-pointer text-xs sm:text-sm"
                         onClick={() => handleFieldEdit(record, 'end_time')}
-                        title={date.format('DD/MM/YYYY HH:mm')}
                     >
                         {date.format(format)}
                     </span>
@@ -467,42 +511,42 @@ const TaskTable = ({
         {
             title: 'Thao tác',
             key: 'action',
-            fixed: 'right',
-            width: isMobile ? 80 : 130,
+            width: '15%',
             align: 'center' as const,
-            render: (_: any, record: TaskPayload) => (
-                <Space size="small" className="animate-fade-in w-full justify-center">
-                    <Button
-                        type="text"
-                        size="small"
-                        icon={<FontAwesomeIcon icon={faEye} className="text-indigo-600" />}
-                        className="!px-2 !py-1 bg-indigo-100 hover:bg-indigo-200 hover:text-indigo-800 rounded-full transition-all duration-200 shadow-sm"
-                        onClick={() => handleViewDetail(record)}
-                        aria-label="Xem chi tiết công việc"
-                    >
-                        {!isMobile && 'Xem'}
-                    </Button>
-                    <Popconfirm
-                        title="Bạn có chắc chắn muốn xóa công việc này?"
-                        onConfirm={() => {
-                            const taskId = record.id;
-                            if (taskId) handleDeleteTask(taskId);
-                        }}
-                        okText="Có"
-                        cancelText="Không"
-                        okButtonProps={{ danger: true, className: 'bg-red-600 hover:bg-red-700 rounded-lg' }}
-                        cancelButtonProps={{ className: 'rounded-lg' }}
-                    >
+            className: '!w-[120px]',
+            render: (_: any, record: TaskPayload) => {
+                return (
+                    <Space className="animate-fade-in w-full justify-center" size="small">
                         <Button
                             type="text"
-                            size="small"
-                            icon={<FontAwesomeIcon icon={faTrash} className="text-red-600" />}
-                            className="!px-2 !py-1 bg-red-100 hover:bg-red-200 hover:text-red-800 rounded-full transition-all duration-200 shadow-sm"
-                            aria-label="Xóa công việc"
-                        />
-                    </Popconfirm>
-                </Space>
-            ),
+                            icon={<FontAwesomeIcon icon={faEye} className="text-blue-600" />}
+                            className="!px-2 !py-1 bg-blue-100 hover:bg-blue-200 hover:text-blue-800 rounded-full transition-all duration-200 shadow-sm"
+                            onClick={() => handleViewDetail(record)}
+                        >
+                            {!isMobile && 'Xem'}
+                        </Button>
+                        <Popconfirm
+                            title="Bạn có chắc chắn muốn xóa công việc này?"
+                            onConfirm={() => {
+                                const taskId = record.id;
+                                if (taskId) {
+                                    handleDeleteTask(taskId);
+                                }
+                            }}
+                            okText="Có"
+                            cancelText="Không"
+                            okButtonProps={{ danger: true, className: 'bg-red-600 hover:bg-red-700 rounded-lg' }}
+                            cancelButtonProps={{ className: 'rounded-lg' }}
+                        >
+                            <Button
+                                type="text"
+                                icon={<FontAwesomeIcon icon={faTrash} className="text-red-600" />}
+                                className="!px-2 !py-1 bg-red-100 hover:bg-red-200 hover:text-red-800 rounded-full transition-all duration-200 shadow-sm"
+                            />
+                        </Popconfirm>
+                    </Space>
+                );
+            },
         },
     ];
 
@@ -520,74 +564,67 @@ const TaskTable = ({
     };
 
     return (
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-            {/* Header Section */}
-            <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+        <div className="bg-white rounded-lg shadow">
+            <div className="p-4 border-b border-gray-200">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div className="flex items-center space-x-4 w-full sm:w-auto">
+                    <div className="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto">
                         <Button
                             type="primary"
                             icon={<PlusOutlined />}
                             onClick={onTaskCreated}
-                            className="!bg-indigo-600 hover:!bg-indigo-700 !rounded-lg !font-semibold !shadow-sm !transition-all !duration-200 !flex !items-center"
-                            aria-label="Thêm công việc mới"
+                            className="!flex !items-center"
                         >
                             <span className="hidden sm:inline">Thêm công việc</span>
                         </Button>
                     </div>
-                    <div className="flex items-center space-x-3 w-full sm:w-auto">
-                        <Button
-                            type="text"
-                            icon={<ReloadOutlined className="text-gray-600" />}
-                            onClick={handleReset}
-                            className="!p-2 !h-10 hover:bg-gray-100 !rounded-lg !transition-all !duration-200"
-                            aria-label="Làm mới danh sách"
-                        />
+                    <div className="flex items-center space-x-2 w-full sm:w-auto">
+                        <Tooltip title="Làm mới">
+                            <Button icon={<ReloadOutlined />} onClick={handleReset} className="!flex !items-center" />
+                        </Tooltip>
                         <div className="relative flex-1 sm:flex-none">
                             <Input
-                                placeholder="Tìm kiếm công việc..."
-                                prefix={<SearchOutlined className="text-gray-500" />}
+                                placeholder="Tìm kiếm..."
+                                prefix={<SearchOutlined />}
                                 value={searchTitle}
                                 onChange={(e) => handleSearch(e.target.value)}
-                                className="w-full sm:w-64 rounded-lg border-gray-300 hover:border-indigo-500 focus:border-indigo-500 shadow-sm transition-all duration-300"
+                                className="w-full sm:w-48 md:w-64"
                                 allowClear
-                                aria-label="Tìm kiếm công việc"
                             />
                         </div>
-                        <Button
-                            type="text"
-                            icon={<FilterOutlined className="text-gray-600" />}
-                            onClick={() => setIsFilterModalVisible(true)}
-                            className="!p-2 !h-10 hover:bg-gray-100 !rounded-lg !transition-all !duration-200"
-                            aria-label="Lọc công việc"
-                        />
+                        <Tooltip title="Lọc">
+                            <Button
+                                icon={<FilterOutlined />}
+                                onClick={() => setIsFilterModalVisible(true)}
+                                className="!flex !items-center"
+                            />
+                        </Tooltip>
                     </div>
                 </div>
             </div>
 
-            {/* Table Section */}
             <Form form={form} component={false}>
-                <Table
-                    columns={columns}
-                    dataSource={localTasks}
-                    loading={loading}
-                    rowKey="id"
-                    pagination={{
-                        current: currentPage,
-                        total: totalTasks,
-                        onChange: onPageChange,
-                        pageSize: 10,
-                        showSizeChanger: false,
-                        className: 'px-6 py-4',
-                        position: ['bottomCenter'],
-                    }}
-                    className="custom-table"
-                    rowClassName="hover:bg-gray-50 transition-colors duration-200"
-                    scroll={{ x: 'max-content' }}
-                />
+                <div className="overflow-x-auto">
+                    <TaskTableContent
+                        loading={loading}
+                        error={error}
+                        onReload={onReload}
+                        searchText={searchTitle}
+                        setSearchText={setSearchTitle}
+                        filteredTasks={localTasks}
+                        columns={columns}
+                        currentPage={currentPage}
+                        totalTasks={totalTasks}
+                        onPageChange={onPageChange}
+                        teamId={teamId}
+                        onEditTask={onEditTask}
+                        onDeleteTask={handleDeleteTask}
+                        teamMembers={teamMembers}
+                        onAssignTask={onAssignTask}
+                        scroll={{ x: 'max-content' }}
+                    />
+                </div>
             </Form>
 
-            {/* Filter Modal */}
             <FilterModal
                 visible={isFilterModalVisible}
                 onClose={() => setIsFilterModalVisible(false)}
@@ -597,20 +634,15 @@ const TaskTable = ({
             />
 
             <Drawer
-                title={
-                    <div className="text-xl sm:text-2xl font-semibold text-gray-800 bg-gradient-to-r from-gray-50 to-white p-4 rounded-t-lg">
-                        Chi tiết công việc
-                    </div>
-                }
+                title={<div className="text-xl font-semibold text-gray-800">Chi tiết công việc</div>}
                 placement="right"
                 onClose={() => setDrawerVisible(false)}
                 open={drawerVisible}
                 closable
-                width={isMobile ? '100%' : 'min(50%, 600px)'}
-                className="rounded-l-xl shadow-xl"
-                closeIcon={<FontAwesomeIcon icon={faTimes} className="text-gray-600 hover:text-red-600" />}
+                destroyOnHidden
+                width={window.innerWidth < 768 ? '100%' : '50%'}
             >
-                <div className="p-6 space-y-6">{renderTaskDetails()}</div>
+                <div className="p-6">{renderTaskDetails()}</div>
             </Drawer>
         </div>
     );

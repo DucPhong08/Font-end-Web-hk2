@@ -17,21 +17,26 @@ const Register = ({ onRegisterSuccess }: RegisterProps) => {
     const [loading, setLoading] = useState(false);
 
     const validateInput = () => {
-        if (!fullName.trim() || fullName.trim().length < 2) {
+        const trimmedFullName = fullName.trim();
+        const trimmedEmail = email.trim();
+        const trimmedPassword = password.trim();
+        const trimmedConfirmPassword = confirmPassword.trim();
+
+        if (!trimmedFullName || trimmedFullName.length < 2) {
             throw new Error('Họ và tên phải có ít nhất 2 ký tự');
         }
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
+        if (!emailRegex.test(trimmedEmail)) {
             throw new Error('Email không hợp lệ');
         }
 
         const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{6,}$/;
-        if (!passwordRegex.test(password)) {
+        if (!passwordRegex.test(trimmedPassword)) {
             throw new Error('Mật khẩu phải có ít nhất 6 ký tự, gồm chữ cái và số');
         }
 
-        if (password !== confirmPassword) {
+        if (trimmedPassword !== trimmedConfirmPassword) {
             throw new Error('Mật khẩu và xác nhận mật khẩu không khớp');
         }
     };
@@ -44,8 +49,12 @@ const Register = ({ onRegisterSuccess }: RegisterProps) => {
         try {
             validateInput();
 
-            await registerApi(email, password, fullName);
-            await login(email, password);
+            const trimmedEmail = email.trim();
+            const trimmedPassword = password.trim();
+            const trimmedFullName = fullName.trim();
+
+            await registerApi(trimmedEmail, trimmedPassword, trimmedFullName);
+            await login(trimmedEmail, trimmedPassword);
 
             toast.success('Đăng ký thành công! Chào mừng bạn đến với ứng dụng!', { autoClose: 2000 });
 
@@ -58,6 +67,20 @@ const Register = ({ onRegisterSuccess }: RegisterProps) => {
             toast.error(errMsg);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleFullNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        if (value.trim() || value === '') {
+            setFullName(value);
+        }
+    };
+
+    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        if (value.trim() || value === '') {
+            setEmail(value);
         }
     };
 
@@ -87,10 +110,12 @@ const Register = ({ onRegisterSuccess }: RegisterProps) => {
                         <input
                             type="text"
                             placeholder="Nhập tên"
-                            className="w-full px-3 py-2 border-2  rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm border-[#ccc]"
+                            className="w-full px-3 py-2 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm border-[#ccc]"
                             value={fullName}
-                            onChange={(e) => setFullName(e.target.value)}
+                            onChange={handleFullNameChange}
                             required
+                            minLength={2}
+                            maxLength={50}
                         />
                     </div>
                     <div>
@@ -98,10 +123,11 @@ const Register = ({ onRegisterSuccess }: RegisterProps) => {
                         <input
                             type="email"
                             placeholder="Nhập tài khoản (Đúng định dạng abc@xyz.com)"
-                            className="w-full px-3 py-2 border-2  rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm border-[#ccc]"
+                            className="w-full px-3 py-2 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm border-[#ccc]"
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            onChange={handleEmailChange}
                             required
+                            maxLength={100}
                         />
                     </div>
                     <div>
@@ -109,10 +135,12 @@ const Register = ({ onRegisterSuccess }: RegisterProps) => {
                         <input
                             type="password"
                             placeholder="Tối thiểu 6 kí tự, bao gồm chữ và số"
-                            className="w-full px-3 py-2 border-2  rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm border-[#ccc]"
+                            className="w-full px-3 py-2 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm border-[#ccc]"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
+                            minLength={6}
+                            maxLength={50}
                         />
                     </div>
                     <div>
@@ -120,10 +148,12 @@ const Register = ({ onRegisterSuccess }: RegisterProps) => {
                         <input
                             type="password"
                             placeholder="Xác nhận mật khẩu"
-                            className="w-full px-3 py-2 border-2  rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm border-[#ccc]"
+                            className="w-full px-3 py-2 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm border-[#ccc]"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             required
+                            minLength={6}
+                            maxLength={50}
                         />
                     </div>
                     <button

@@ -50,7 +50,15 @@ const ChangePasswordModal = ({ open, onClose }: ChangePasswordModalProps) => {
                         label="Mật khẩu hiện tại"
                         rules={[{ required: true, message: 'Vui lòng nhập mật khẩu hiện tại!' }]}
                     >
-                        <Input.Password prefix={<LockOutlined />} placeholder="Nhập mật khẩu hiện tại" />
+                        <Input.Password
+                            prefix={<LockOutlined />}
+                            placeholder="Nhập mật khẩu hiện tại"
+                            onKeyDown={(e) => {
+                                if (e.key === ' ' && !e.currentTarget.value) {
+                                    e.preventDefault();
+                                }
+                            }}
+                        />
                     </Form.Item>
 
                     <Form.Item
@@ -61,7 +69,15 @@ const ChangePasswordModal = ({ open, onClose }: ChangePasswordModalProps) => {
                             { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự!' },
                         ]}
                     >
-                        <Input.Password prefix={<LockOutlined />} placeholder="Nhập mật khẩu mới" />
+                        <Input.Password
+                            prefix={<LockOutlined />}
+                            placeholder="Nhập mật khẩu mới"
+                            onKeyDown={(e) => {
+                                if (e.key === ' ' && !e.currentTarget.value) {
+                                    e.preventDefault();
+                                }
+                            }}
+                        />
                     </Form.Item>
 
                     <Form.Item
@@ -80,7 +96,15 @@ const ChangePasswordModal = ({ open, onClose }: ChangePasswordModalProps) => {
                             }),
                         ]}
                     >
-                        <Input.Password prefix={<LockOutlined />} placeholder="Nhập lại mật khẩu mới" />
+                        <Input.Password
+                            prefix={<LockOutlined />}
+                            placeholder="Nhập lại mật khẩu mới"
+                            onKeyDown={(e) => {
+                                if (e.key === ' ' && !e.currentTarget.value) {
+                                    e.preventDefault();
+                                }
+                            }}
+                        />
                     </Form.Item>
 
                     <Form.Item>

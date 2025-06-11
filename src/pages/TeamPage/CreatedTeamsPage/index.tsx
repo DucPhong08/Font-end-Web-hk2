@@ -154,7 +154,7 @@ function CreatedTeamsPage() {
     );
 
     return (
-        <div>
+        <>
             {contextHolder}
             <div className="flex justify-between flex-col md:flex-row items-center mb-6">
                 <div className="flex items-center gap-4">
@@ -234,16 +234,39 @@ function CreatedTeamsPage() {
                     <Form.Item
                         name="name"
                         label="Tên nhóm"
-                        rules={[{ required: true, message: 'Vui lòng nhập tên nhóm!' }]}
+                        rules={[
+                            { required: true, message: 'Vui lòng nhập tên nhóm!' },
+                            {
+                                validator: (_, value) => {
+                                    if (!value || !value.trim()) {
+                                        return Promise.reject('Tên nhóm không được để trống');
+                                    }
+                                    return Promise.resolve();
+                                },
+                            },
+                        ]}
                     >
                         <Input />
                     </Form.Item>
-                    <Form.Item name="description" label="Mô tả">
+                    <Form.Item
+                        name="description"
+                        label="Mô tả"
+                        rules={[
+                            {
+                                validator: (_, value) => {
+                                    if (value && !value.trim()) {
+                                        return Promise.reject('Mô tả không được chỉ chứa khoảng trắng');
+                                    }
+                                    return Promise.resolve();
+                                },
+                            },
+                        ]}
+                    >
                         <Input.TextArea />
                     </Form.Item>
                 </Form>
             </Modal>
-        </div>
+        </>
     );
 }
 

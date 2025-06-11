@@ -138,7 +138,7 @@ function TaskDetails({ task: initialTask, onEditTask, onDeleteTask, onReload, te
         try {
             memoizedNotification.loading({ key, content: 'Đang thêm bình luận...' });
             setLoading(true);
-            await createTaskComment(Number(task.id), newComment);
+            await createTaskComment(Number(task.id), newComment.trim());
             setNewComment('');
             await fetchComments();
             memoizedNotification.success({ key, content: 'Thêm bình luận thành công!' });
@@ -178,9 +178,15 @@ function TaskDetails({ task: initialTask, onEditTask, onDeleteTask, onReload, te
         async (commentId: number) => {
             const key = 'saveEdit';
             try {
+                const trimmedComment = editCommentText.trim();
+                if (!trimmedComment) {
+                    memoizedNotification.error({ key, content: 'Bình luận không được để trống' });
+                    return;
+                }
+
                 memoizedNotification.loading({ key, content: 'Đang cập nhật bình luận...' });
                 setLoading(true);
-                await updateTaskComment(commentId, editCommentText);
+                await updateTaskComment(commentId, trimmedComment);
                 await fetchComments();
                 setEditingCommentId(null);
                 setEditCommentText('');
@@ -198,9 +204,27 @@ function TaskDetails({ task: initialTask, onEditTask, onDeleteTask, onReload, te
         async (taskData: any) => {
             const key = 'editTask';
             try {
+                // Trim all string values and validate
+                const trimmedData = {
+                    ...taskData,
+                    title: taskData.title?.trim(),
+                    description: taskData.description?.trim(),
+                };
+
+                // Validate required fields
+                if (!trimmedData.title) {
+                    memoizedNotification.error({ key, content: 'Tiêu đề không được để trống' });
+                    return;
+                }
+
+                if (!trimmedData.description || trimmedData.description.replace(/<[^>]+>/g, '').trim() === '') {
+                    memoizedNotification.error({ key, content: 'Mô tả không được để trống' });
+                    return;
+                }
+
                 const updatedTask = {
                     ...task,
-                    ...taskData,
+                    ...trimmedData,
                     start_time: taskData.date[0].format('YYYY-MM-DD HH:mm:ss'),
                     end_time: taskData.date[1].format('YYYY-MM-DD HH:mm:ss'),
                 };
@@ -250,21 +274,48 @@ function TaskDetails({ task: initialTask, onEditTask, onDeleteTask, onReload, te
     const handleSave = useCallback(async () => {
         try {
             const values = await form.validateFields();
-            console.log('Form Values:', values);
+
+            const trimmedValues = {
+                ...values,
+                title: values.title?.trim(),
+                description: values.description?.trim(),
+            };
+
+            if (!trimmedValues.title) {
+                form.setFields([
+                    {
+                        name: 'title',
+                        errors: ['Tiêu đề không được để trống'],
+                    },
+                ]);
+                return;
+            }
+
+            if (!trimmedValues.description || trimmedValues.description.replace(/<[^>]+>/g, '').trim() === '') {
+                form.setFields([
+                    {
+                        name: 'description',
+                        errors: ['Mô tả không được để trống'],
+                    },
+                ]);
+                return;
+            }
 
             const updatedTask = {
                 ...task,
-                ...values,
-                start_time: values.start_time ? values.start_time.format('YYYY-MM-DD HH:mm:ss') : task.start_time,
-                end_time: values.end_time ? values.end_time.format('YYYY-MM-DD HH:mm:ss') : task.end_time,
+                ...trimmedValues,
+                start_time: trimmedValues.start_time
+                    ? trimmedValues.start_time.format('YYYY-MM-DD HH:mm:ss')
+                    : task.start_time,
+                end_time: trimmedValues.end_time ? trimmedValues.end_time.format('YYYY-MM-DD HH:mm:ss') : task.end_time,
             };
 
-            if (values.assigned_user_id && values.assigned_user_id !== task.assigned_user_id) {
+            if (trimmedValues.assigned_user_id && trimmedValues.assigned_user_id !== task.assigned_user_id) {
                 await updateAssignment({
                     taskId: Number(task.id),
-                    userId: values.assigned_user_id,
+                    userId: trimmedValues.assigned_user_id,
                 });
-                updatedTask.assigned_user_id = values.assigned_user_id;
+                updatedTask.assigned_user_id = trimmedValues.assigned_user_id;
             }
 
             setTask(updatedTask);

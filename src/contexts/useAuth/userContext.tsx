@@ -6,7 +6,7 @@ import { logout as logoutApi } from '../../services/authServices';
 import { UserProfile } from '../../services/types/types';
 import { clearToken, getToken, saveToken } from '../../utils/auth/authUtils';
 import { useMessage } from '@/hooks/useMessage';
-import { API_BASE_URL, WS_URL } from '@/config/config';
+import { WS_URL } from '@/config/config';
 
 interface UserContextType {
     user: UserProfile | null;
@@ -36,7 +36,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
             setSocket(newSocket);
 
             newSocket.on('connect', () => {
-                console.log('Connected to Socket.IO');
                 newSocket.emit('authenticate', token);
             });
 

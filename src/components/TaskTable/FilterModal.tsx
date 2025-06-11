@@ -12,27 +12,52 @@ const FilterModal = ({ visible, onClose, onFilter, teamId, teamMembers = [] }: F
         form.validateFields().then((values) => {
             const filters: any = {};
 
-            if (values.status) {
-                filters.status = values.status;
+            // Trim và validate các giá trị
+            if (values.status && values.status.trim()) {
+                if (values.status.startsWith(' ')) {
+                    form.setFields([
+                        {
+                            name: 'status',
+                            errors: ['Giá trị không được bắt đầu bằng khoảng trắng'],
+                        },
+                    ]);
+                    return;
+                }
+                filters.status = values.status.trim();
             }
 
-            if (values.priority) {
-                filters.priority = values.priority;
+            if (values.priority && values.priority.trim()) {
+                if (values.priority.startsWith(' ')) {
+                    form.setFields([
+                        {
+                            name: 'priority',
+                            errors: ['Giá trị không được bắt đầu bằng khoảng trắng'],
+                        },
+                    ]);
+                    return;
+                }
+                filters.priority = values.priority.trim();
             }
 
             if (values.dateRange) {
                 const [startDate, endDate] = values.dateRange;
-                filters.startDate = dayjs(startDate).format('YYYY-MM-DD HH:mm:ss');
-                filters.endDate = dayjs(endDate).format('YYYY-MM-DD HH:mm:ss');
+                if (startDate && endDate) {
+                    filters.startDate = dayjs(startDate).format('YYYY-MM-DD HH:mm:ss');
+                    filters.endDate = dayjs(endDate).format('YYYY-MM-DD HH:mm:ss');
+                }
             }
 
             if (values.assignee) {
                 filters.assigned_user_id = values.assignee;
             }
 
-            // Chỉ gửi các filter có giá trị
             const validFilters = Object.fromEntries(
-                Object.entries(filters).filter(([_, value]) => value !== undefined && value !== null && value !== ''),
+                Object.entries(filters).filter(([_, value]) => {
+                    if (typeof value === 'string') {
+                        return value.trim() !== '';
+                    }
+                    return value !== undefined && value !== null;
+                }),
             );
 
             onFilter(validFilters);
@@ -69,7 +94,11 @@ const FilterModal = ({ visible, onClose, onFilter, teamId, teamMembers = [] }: F
             ]}
         >
             <Form form={form} layout="vertical" className="space-y-4">
-                <Form.Item name="status" label={<span className="text-sm sm:text-base font-medium">Trạng thái</span>}>
+                <Form.Item
+                    name="status"
+                    label={<span className="text-sm sm:text-base font-medium">Trạng thái</span>}
+                    normalize={(value) => value?.trim()}
+                >
                     <Select
                         placeholder="Chọn trạng thái"
                         allowClear
@@ -81,7 +110,11 @@ const FilterModal = ({ visible, onClose, onFilter, teamId, teamMembers = [] }: F
                     />
                 </Form.Item>
 
-                <Form.Item name="priority" label={<span className="text-sm sm:text-base font-medium">Độ ưu tiên</span>}>
+                <Form.Item
+                    name="priority"
+                    label={<span className="text-sm sm:text-base font-medium">Độ ưu tiên</span>}
+                    normalize={(value) => value?.trim()}
+                >
                     <Select
                         placeholder="Chọn độ ưu tiên"
                         allowClear
@@ -104,7 +137,7 @@ const FilterModal = ({ visible, onClose, onFilter, teamId, teamMembers = [] }: F
                             className="w-full"
                             showSearch
                             filterOption={(input, option) =>
-                                (option?.label as string).toLowerCase().includes(input.toLowerCase())
+                                (option?.label as string).toLowerCase().includes(input.toLowerCase().trim())
                             }
                         >
                             {teamMembers.map((member) => (
