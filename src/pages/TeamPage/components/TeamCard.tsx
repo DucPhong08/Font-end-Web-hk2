@@ -128,42 +128,43 @@ const TeamCard = ({ id, name, avatar_url, creator_name, type, onEdit, onDelete, 
                 )}
             </div>
 
-            <div className="flex justify-around border-t border-gray-100 pt-3 mt-2">
+            {/* Responsive action buttons */}
+            <div className="flex justify-around lg:justify-around border-t border-gray-100 pt-3 mt-2 flex-wrap gap-2">
                 <Tooltip title="Tổng quan">
                     <div
                         onClick={(e) => handleActionClick(e, 'overview')}
-                        className="flex flex-col items-center text-gray-500 hover:text-blue-600 transition-colors duration-200 p-2 rounded-md hover:bg-blue-50 cursor-pointer group"
+                        className="flex flex-col items-center text-gray-500 hover:text-blue-600 transition-colors duration-200 p-2 rounded-md hover:bg-blue-50 cursor-pointer group min-w-0 flex-1 lg:flex-initial"
                     >
                         <FontAwesomeIcon
                             icon={faDashboard}
                             className="text-lg group-hover:scale-110 transition-transform duration-200"
                         />
-                        <span className="text-xs mt-1 group-hover:text-blue-600">Tổng quan</span>
+                        <span className="text-xs mt-1 group-hover:text-blue-600 text-center">Tổng quan</span>
                     </div>
                 </Tooltip>
                 <Tooltip title="Công việc">
                     <div
                         onClick={(e) => handleActionClick(e, 'tasks')}
-                        className="flex flex-col items-center text-gray-500 hover:text-blue-600 transition-colors duration-200 p-2 rounded-md hover:bg-blue-50 cursor-pointer group"
+                        className="flex flex-col items-center text-gray-500 hover:text-blue-600 transition-colors duration-200 p-2 rounded-md hover:bg-blue-50 cursor-pointer group min-w-0 flex-1 lg:flex-initial"
                     >
                         <FontAwesomeIcon
                             icon={faBriefcase}
                             className="text-lg group-hover:scale-110 transition-transform duration-200"
                         />
-                        <span className="text-xs mt-1 group-hover:text-blue-600">Công việc</span>
+                        <span className="text-xs mt-1 group-hover:text-blue-600 text-center">Công việc</span>
                     </div>
                 </Tooltip>
                 {onEdit && (
                     <Tooltip title="Chỉnh sửa">
                         <div
                             onClick={(e) => handleActionClick(e, 'settings')}
-                            className="flex flex-col items-center text-gray-500 hover:text-blue-600 transition-colors duration-200 p-2 rounded-md hover:bg-blue-50 cursor-pointer group"
+                            className="flex flex-col items-center text-gray-500 hover:text-blue-600 transition-colors duration-200 p-2 rounded-md hover:bg-blue-50 cursor-pointer group min-w-0 flex-1 lg:flex-initial"
                         >
                             <FontAwesomeIcon
                                 icon={faPencilAlt}
                                 className="text-lg group-hover:scale-110 transition-transform duration-200"
                             />
-                            <span className="text-xs mt-1 group-hover:text-blue-600">Chỉnh sửa</span>
+                            <span className="text-xs mt-1 group-hover:text-blue-600 text-center">Chỉnh sửa</span>
                         </div>
                     </Tooltip>
                 )}

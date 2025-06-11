@@ -121,7 +121,7 @@ function JoinedTeamsPage() {
             {state.teams.length === 0 && !state.loading && <p>Chưa tham gia nhóm nào.</p>}
             {!isCollapsed && (
                 <>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 py-4">
+                    <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 py-4">
                         {state.teams.map((team) => (
                             <TeamCard
                                 key={team.id}

@@ -62,8 +62,7 @@ const StatisticCard = ({
     <Card
         className="shadow-lg hover:shadow-xl transition-all duration-300 border-0 h-full"
         style={{
-            background: bgGradient || `linear-gradient(135deg, ${color}15 0%, ${color}05 100%)`,
-            borderLeft: `4px solid ${color}`,
+            background: bgGradient || `linear-gradient(135deg, ${color}25 0%, ${color}10 100%)`,
             minHeight: '120px',
         }}
         bodyStyle={{ height: '100%', display: 'flex', alignItems: 'center' }}
@@ -73,7 +72,7 @@ const StatisticCard = ({
             value={value}
             suffix={suffix}
             prefix={icon}
-            valueStyle={{ color, fontWeight: 'bold', fontSize: '1.5rem' }}
+            valueStyle={{ color: '#ffffff', fontWeight: 'bold', fontSize: '1.5rem' }}
         />
     </Card>
 );
@@ -90,12 +89,16 @@ const PercentCard = ({
     bgGradient?: string;
 }) => (
     <Card
-        title={<span className="text-gray-800 font-bold">{title}</span>}
+        title={<span className="text-white font-bold">{title}</span>}
         className="shadow-lg hover:shadow-xl transition-all duration-300 border-0 h-full"
         style={{
-            background: bgGradient || `linear-gradient(135deg, ${color}15 0%, ${color}05 100%)`,
-            borderLeft: `4px solid ${color}`,
+            background: bgGradient || `linear-gradient(135deg, ${color}90 0%, ${color}70 100%)`,
             minHeight: '160px',
+        }}
+        headStyle={{ 
+            background: 'transparent', 
+            borderBottom: '1px solid rgba(255,255,255,0.2)',
+            color: '#ffffff'
         }}
         bodyStyle={{ height: 'calc(100% - 57px)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
     >
@@ -104,16 +107,13 @@ const PercentCard = ({
                 value={value}
                 precision={1}
                 suffix="%"
-                valueStyle={{ color, fontWeight: 'bold', fontSize: '1.8rem' }}
+                valueStyle={{ color: '#ffffff', fontWeight: 'bold', fontSize: '1.8rem' }}
             />
             <Progress
                 percent={value}
                 showInfo={false}
-                strokeColor={{
-                    '0%': color,
-                    '100%': `${color}80`,
-                }}
-                trailColor={`${color}20`}
+                strokeColor="#ffffff"
+                trailColor="rgba(255,255,255,0.3)"
             />
         </div>
     </Card>
@@ -131,12 +131,16 @@ const HourCard = ({
     bgGradient?: string;
 }) => (
     <Card
-        title={<span className="text-gray-800 font-bold">{title}</span>}
+        title={<span className="text-white font-bold">{title}</span>}
         className="shadow-lg hover:shadow-xl transition-all duration-300 border-0 h-full"
         style={{
-            background: bgGradient || `linear-gradient(135deg, ${color}15 0%, ${color}05 100%)`,
-            borderLeft: `4px solid ${color}`,
+            background: bgGradient || `linear-gradient(135deg, ${color}90 0%, ${color}70 100%)`,
             minHeight: '160px',
+        }}
+        headStyle={{ 
+            background: 'transparent', 
+            borderBottom: '1px solid rgba(255,255,255,0.2)',
+            color: '#ffffff'
         }}
         bodyStyle={{ height: 'calc(100% - 57px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
     >
@@ -144,8 +148,8 @@ const HourCard = ({
             value={value}
             precision={1}
             suffix="giờ"
-            prefix={<ClockCircleOutlined />}
-            valueStyle={{ color, fontWeight: 'bold', fontSize: '1.5rem' }}
+            prefix={<ClockCircleOutlined style={{ color: '#ffffff' }} />}
+            valueStyle={{ color: '#ffffff', fontWeight: 'bold', fontSize: '1.5rem' }}
         />
     </Card>
 );
@@ -287,18 +291,18 @@ function MemberStatistics({ teamId, userId, onClose }: MemberStatisticsProps) {
                     <StatisticCard
                         title="Tổng công việc đã tạo"
                         value={task_statistics.total_created_tasks}
-                        icon={<FireOutlined />}
+                        icon={<FireOutlined style={{ color: '#ffffff' }} />}
                         color="#6366f1"
-                        bgGradient="linear-gradient(135deg, #6366f115 0%, #8b5cf605 100%)"
+                        bgGradient="linear-gradient(135deg, #6366f190 0%, #8b5cf670 100%)"
                     />
                 </Col>
                 <Col xs={24} sm={12} md={12} lg={12} xl={6}>
                     <StatisticCard
                         title="Công việc đã phân công"
                         value={task_statistics.assigned_tasks}
-                        icon={<UserOutlined />}
+                        icon={<UserOutlined style={{ color: '#ffffff' }} />}
                         color="#8b5cf6"
-                        bgGradient="linear-gradient(135deg, #8b5cf615 0%, #a78bfa05 100%)"
+                        bgGradient="linear-gradient(135deg, #8b5cf690 0%, #a78bfa70 100%)"
                     />
                 </Col>
                 <Col xs={24} sm={12} md={12} lg={12} xl={6}>
@@ -306,7 +310,7 @@ function MemberStatistics({ teamId, userId, onClose }: MemberStatisticsProps) {
                         title="Hoàn thành"
                         value={parseFloat(task_statistics.completed_tasks) || 0}
                         color="#10b981"
-                        bgGradient="linear-gradient(135deg, #10b98115 0%, #34d39905 100%)"
+                        bgGradient="linear-gradient(135deg, #10b98190 0%, #34d39970 100%)"
                     />
                 </Col>
                 <Col xs={24} sm={12} md={12} lg={12} xl={6}>
@@ -314,7 +318,7 @@ function MemberStatistics({ teamId, userId, onClose }: MemberStatisticsProps) {
                         title="Đang thực hiện"
                         value={parseFloat(task_statistics.pending_tasks) || 0}
                         color="#f59e0b"
-                        bgGradient="linear-gradient(135deg, #f59e0b15 0%, #fbbf2405 100%)"
+                        bgGradient="linear-gradient(135deg, #f59e0b90 0%, #fbbf2470 100%)"
                     />
                 </Col>
             </Row>
@@ -326,7 +330,7 @@ function MemberStatistics({ teamId, userId, onClose }: MemberStatisticsProps) {
                         title="Tỷ lệ hoàn thành"
                         value={parseFloat(task_statistics.completion_rate) || 0}
                         color="#059669"
-                        bgGradient="linear-gradient(135deg, #05966915 0%, #10b98105 100%)"
+                        bgGradient="linear-gradient(135deg, #05966990 0%, #10b98170 100%)"
                     />
                 </Col>
                 <Col xs={24} sm={12} md={12} lg={12} xl={8}>
@@ -334,16 +338,16 @@ function MemberStatistics({ teamId, userId, onClose }: MemberStatisticsProps) {
                         title="Tỷ lệ ưu tiên cao"
                         value={parseFloat(task_statistics.high_priority_rate) || 0}
                         color="#dc2626"
-                        bgGradient="linear-gradient(135deg, #dc262615 0%, #ef444405 100%)"
+                        bgGradient="linear-gradient(135deg, #dc262690 0%, #ef444470 100%)"
                     />
                 </Col>
                 <Col xs={24} sm={24} md={24} lg={24} xl={8}>
                     <StatisticCard
                         title="Điểm hoạt động"
                         value={parseFloat(task_statistics.activity_score)}
-                        icon={<TrophyOutlined />}
+                        icon={<TrophyOutlined style={{ color: '#ffffff' }} />}
                         color="#f59e0b"
-                        bgGradient="linear-gradient(135deg, #f59e0b15 0%, #fbbf2405 100%)"
+                        bgGradient="linear-gradient(135deg, #f59e0b90 0%, #fbbf2470 100%)"
                     />
                 </Col>
             </Row>
@@ -391,7 +395,7 @@ function MemberStatistics({ teamId, userId, onClose }: MemberStatisticsProps) {
                             title="Thời gian trung bình"
                             value={performance_metrics.avg_completion_time}
                             color="#3b82f6"
-                            bgGradient="linear-gradient(135deg, #3b82f615 0%, #60a5fa05 100%)"
+                            bgGradient="linear-gradient(135deg, #3b82f690 0%, #60a5fa70 100%)"
                         />
                     </Col>
                     <Col xs={24} sm={12} md={12} lg={12} xl={8}>
@@ -399,7 +403,7 @@ function MemberStatistics({ teamId, userId, onClose }: MemberStatisticsProps) {
                             title="Nhanh nhất"
                             value={performance_metrics.min_completion_time}
                             color="#10b981"
-                            bgGradient="linear-gradient(135deg, #10b98115 0%, #34d39905 100%)"
+                            bgGradient="linear-gradient(135deg, #10b98190 0%, #34d39970 100%)"
                         />
                     </Col>
                     <Col xs={24} sm={24} md={24} lg={24} xl={8}>
@@ -407,7 +411,7 @@ function MemberStatistics({ teamId, userId, onClose }: MemberStatisticsProps) {
                             title="Lâu nhất"
                             value={performance_metrics.max_completion_time}
                             color="#f59e0b"
-                            bgGradient="linear-gradient(135deg, #f59e0b15 0%, #fbbf2405 100%)"
+                            bgGradient="linear-gradient(135deg, #f59e0b90 0%, #fbbf2470 100%)"
                         />
                     </Col>
                 </Row>
