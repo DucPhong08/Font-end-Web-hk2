@@ -326,6 +326,14 @@ const UserManagement = () => {
                         rules={[
                             { required: true, message: 'Vui lòng nhập email' },
                             { type: 'email', message: 'Email không hợp lệ' },
+                            {
+                                validator: (_, value) => {
+                                    if (!value || !value.trim()) {
+                                        return Promise.reject('Email không được để trống');
+                                    }
+                                    return Promise.resolve();
+                                },
+                            },
                         ]}
                     >
                         <Input
@@ -337,7 +345,17 @@ const UserManagement = () => {
                     <Form.Item
                         name="full_name"
                         label={<span className="font-medium text-gray-700">Họ và tên</span>}
-                        rules={[{ required: true, message: 'Vui lòng nhập họ và tên' }]}
+                        rules={[
+                            { required: true, message: 'Vui lòng nhập họ và tên' },
+                            {
+                                validator: (_, value) => {
+                                    if (!value || !value.trim()) {
+                                        return Promise.reject('Họ và tên không được để trống');
+                                    }
+                                    return Promise.resolve();
+                                },
+                            },
+                        ]}
                     >
                         <Input className="rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:ring-blue-500 focus:outline-none transition duration-150 ease-in-out" />
                     </Form.Item>
@@ -349,6 +367,14 @@ const UserManagement = () => {
                             rules={[
                                 { required: true, message: 'Vui lòng nhập mật khẩu' },
                                 { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự' },
+                                {
+                                    validator: (_, value) => {
+                                        if (!value || !value.trim()) {
+                                            return Promise.reject('Mật khẩu không được để trống');
+                                        }
+                                        return Promise.resolve();
+                                    },
+                                },
                             ]}
                         >
                             <Input.Password className="rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:ring-blue-500 focus:outline-none transition duration-150 ease-in-out" />
