@@ -176,7 +176,7 @@ const Tasks = ({ teamId }: TasksProps) => {
 
     const handleFilter = (values: any) => {
         setFilters(values);
-        setCurrentPage(1); // Reset về trang 1 khi lọc
+        setCurrentPage(1);
     };
 
     useEffect(() => {

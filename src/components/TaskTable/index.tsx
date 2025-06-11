@@ -175,11 +175,13 @@ const TaskTable = ({
     };
 
     const handleSearch = (value: string) => {
-        // Chỉ kiểm tra khi input rỗng hoặc chỉ chứa khoảng trắng
-        if (!value.trim()) {
-            return;
+        // Kiểm tra nếu giá trị bắt đầu bằng khoảng trắng và có dữ liệu
+        if (value.startsWith(' ') && value.trim()) {
+            setSearchTitle(value);
+        } else if (!value.startsWith(' ')) {
+            // Nếu không bắt đầu bằng khoảng trắng thì cho phép
+            setSearchTitle(value);
         }
-        setSearchTitle(value);
     };
 
     const handleReset = () => {
@@ -514,6 +516,7 @@ const TaskTable = ({
             width: '15%',
             align: 'center' as const,
             className: '!w-[120px]',
+            fixed: 'right',
             render: (_: any, record: TaskPayload) => {
                 return (
                     <Space className="animate-fade-in w-full justify-center" size="small">
